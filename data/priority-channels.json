@@ -1,0 +1,13 @@
+{
+  "$schema": "priority-channels-schema",
+  "description": "Channel priority multipliers for search ranking. Higher values boost all search results from that channel. Default is 1.0 for channels not listed here.",
+  "channels": {
+    "JKenjiLopezAlt": 2.0,
+    "EthanChlebowski": 2.0,
+    "bingingwithbabish": 2.0,
+    "epicurious": 2.0,
+    "AmericasTestKitchen": 2.0,
+    "JoshuaWeissman": 2.0,
+    "ChefJeanPierre": 2.0
+  }
+}
