@@ -19,6 +19,11 @@ export interface Instruction {
   step: number;
   text: string;
   timestamp_seconds?: number;
+  measurements?: {
+    temperatures?: string[];
+    amounts?: string[];
+    times?: string[];
+  };
 }
 
 export interface Recipe {

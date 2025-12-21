@@ -15,6 +15,7 @@ import { useCookbookStore } from '@/lib/stores/cookbook';
 import { useRecipeProgressStore } from '@/lib/stores/recipeProgress';
 import { useFeatureFlagsStore } from '@/lib/stores/featureFlags';
 import type { VideoWithChannel, Recipe } from '@/lib/types';
+import { extractMeasurements } from '@/lib/extractMeasurements';
 
 interface RecipeViewerProps {
   video: VideoWithChannel;
@@ -217,9 +218,57 @@ function RecipeDisplay({ recipe, videoId }: RecipeDisplayProps) {
                       instruction.step
                     )}
                   </span>
-                  <span className={`flex-1 ${isCompleted ? 'line-through text-zinc-500 dark:text-zinc-500' : 'text-zinc-700 dark:text-zinc-300'}`}>
-                    {instruction.text}
-                  </span>
+                  <div className="flex-1">
+                    <span className={`${isCompleted ? 'line-through text-zinc-500 dark:text-zinc-500' : 'text-zinc-700 dark:text-zinc-300'}`}>
+                      {instruction.text}
+                    </span>
+                    {(() => {
+                      // Prefer AI-extracted measurements, fall back to regex
+                      const aiMeasurements = instruction.measurements;
+                      const hasAiMeasurements = (aiMeasurements?.temperatures?.length ?? 0) > 0 ||
+                                                (aiMeasurements?.amounts?.length ?? 0) > 0 ||
+                                                (aiMeasurements?.times?.length ?? 0) > 0;
+                      const measurements = hasAiMeasurements
+                        ? {
+                            temperatures: aiMeasurements?.temperatures ?? [],
+                            amounts: aiMeasurements?.amounts ?? [],
+                            times: aiMeasurements?.times ?? []
+                          }
+                        : extractMeasurements(instruction.text);
+                      const hasMeasurements = measurements.temperatures.length > 0 ||
+                                              measurements.amounts.length > 0 ||
+                                              measurements.times.length > 0;
+                      if (!hasMeasurements) return null;
+                      return (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {measurements.temperatures.map((temp, idx) => (
+                            <span
+                              key={`temp-${idx}`}
+                              className="px-1.5 py-0.5 text-xs rounded bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800"
+                            >
+                              {temp}
+                            </span>
+                          ))}
+                          {measurements.times.map((time, idx) => (
+                            <span
+                              key={`time-${idx}`}
+                              className="px-1.5 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                            >
+                              {time}
+                            </span>
+                          ))}
+                          {measurements.amounts.map((amount, idx) => (
+                            <span
+                              key={`amt-${idx}`}
+                              className="px-1.5 py-0.5 text-xs rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800"
+                            >
+                              {amount}
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
                 </li>
               );
             })}
@@ -390,7 +439,13 @@ export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerPr
       <div className={`mx-auto px-4 sm:px-6 lg:px-8 py-8 ${layout === 'side-by-side' ? 'max-w-[1600px]' : 'max-w-6xl'}`}>
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => router.back()}
+            onClick={() => {
+              if (window.history.length > 1) {
+                router.back();
+              } else {
+                router.push('/');
+              }
+            }}
             className="text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
             title="Back to search"
           >

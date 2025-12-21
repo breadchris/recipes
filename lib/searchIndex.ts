@@ -1,130 +1,76 @@
-import MiniSearch from 'minisearch';
-import * as fs from 'fs';
-import * as path from 'path';
+import { typesenseClient, COLLECTION_NAME } from './typesense';
 import { VideoWithChannel } from './types';
 
-interface SerializedSearchIndex {
-  index: any;
-  priorityChannels: Record<string, number>;
-  buildTime: string;
-  videoCount: number;
-}
-
-let searchIndex: MiniSearch<VideoWithChannel> | null = null;
-let priorityChannels: Record<string, number> = {};
-
 /**
- * Loads the pre-built search index from disk
- * This only happens once per serverless function instance (cached in memory)
- */
-export function getSearchIndex(): MiniSearch<VideoWithChannel> {
-  if (searchIndex) {
-    return searchIndex;
-  }
-
-  try {
-    const indexPath = path.join(process.cwd(), 'data/search-index.json');
-    const indexData: SerializedSearchIndex = JSON.parse(
-      fs.readFileSync(indexPath, 'utf-8')
-    );
-
-    // Restore MiniSearch instance from serialized data
-    searchIndex = MiniSearch.loadJSON<VideoWithChannel>(
-      JSON.stringify(indexData.index),
-      {
-        fields: ['title', 'description', 'channelName'],
-        storeFields: [
-          'id',
-          'title',
-          'description',
-          'duration',
-          'view_count',
-          'upload_date',
-          'thumbnails',
-          'channel',
-          'channel_id',
-          'channelSlug',
-          'channelName',
-          'channelFollowers',
-          'hasRecipe',
-        ],
-        searchOptions: {
-          boost: {
-            title: 3,
-            description: 1,
-            channelName: 0.5,
-          },
-          fuzzy: 0.2,
-          prefix: true,
-        },
-      }
-    );
-
-    // Load priority channels config
-    priorityChannels = indexData.priorityChannels || {};
-
-    console.log(`✅ Search index loaded (${indexData.videoCount} videos, built: ${indexData.buildTime})`);
-
-    return searchIndex;
-  } catch (error) {
-    console.error('❌ Failed to load search index:', error);
-    throw new Error('Search index not found. Run `npm run build:search` to generate it.');
-  }
-}
-
-/**
- * Search videos with field boosting and channel prioritization
+ * Search videos using Typesense with field boosting and channel prioritization
  * @param query - The search query
  * @param limit - Maximum number of results to return (default: 100)
  * @param hasRecipeOnly - If true, only return videos with recipes
  * @returns Array of videos sorted by relevance
  */
-export function searchVideos(query: string, limit: number = 100, hasRecipeOnly: boolean = false): VideoWithChannel[] {
-  const index = getSearchIndex();
-
+export async function searchVideos(
+  query: string,
+  limit: number = 100,
+  hasRecipeOnly: boolean = false
+): Promise<VideoWithChannel[]> {
   if (!query || query.trim().length === 0) {
     return [];
   }
 
-  // Perform search
-  const results = index.search(query, {
-    boost: {
-      title: 3,
-      description: 1,
-      channelName: 0.5,
-    },
-    fuzzy: 0.2,
-    prefix: true,
-  });
+  try {
+    const searchParameters: any = {
+      q: query,
+      query_by: 'title,description,channelName',
+      query_by_weights: '3,1,1', // Title: 3x, Description: 1x, Channel: 1x
+      sort_by: '_text_match:desc,priorityBoost:desc',
+      per_page: limit,
+      prefix: true,
+      typo_tolerance: true,
+      num_typos: 2,
+    };
 
-  // Apply channel priority multipliers and sort
-  let rankedResults = results
-    .map((result) => {
-      const channelBoost = priorityChannels[result.channelSlug] || 1.0;
+    // Add filter for hasRecipe if requested
+    if (hasRecipeOnly) {
+      searchParameters.filter_by = 'hasRecipe:true';
+    }
+
+    const searchResult = await typesenseClient
+      .collections(COLLECTION_NAME)
+      .documents()
+      .search(searchParameters);
+
+    // Transform Typesense results to VideoWithChannel format
+    const videos: VideoWithChannel[] = (searchResult.hits || []).map((hit: any) => {
+      const doc = hit.document;
       return {
-        ...result,
-        score: result.score * channelBoost,
-      };
-    })
-    .sort((a, b) => b.score - a.score);
+        id: doc.id,
+        title: doc.title,
+        description: doc.description,
+        duration: doc.duration,
+        view_count: doc.view_count,
+        upload_date: doc.upload_date,
+        thumbnails: JSON.parse(doc.thumbnails || '[]'),
+        channel: doc.channel,
+        channel_id: doc.channel_id,
+        channelSlug: doc.channelSlug,
+        channelName: doc.channelName,
+        channelFollowers: doc.channelFollowers,
+        hasRecipe: doc.hasRecipe,
+      } as VideoWithChannel;
+    });
 
-  // Filter by hasRecipe if requested
-  if (hasRecipeOnly) {
-    rankedResults = rankedResults.filter((result: any) => result.hasRecipe);
+    return videos;
+  } catch (error) {
+    console.error('❌ Typesense search error:', error);
+    return [];
   }
-
-  rankedResults = rankedResults.slice(0, limit);
-
-  // Return video objects without search metadata
-  return rankedResults.map((result) => {
-    const { score, ...video } = result as any;
-    return video as VideoWithChannel;
-  });
 }
 
 /**
  * Get priority channels configuration
+ * Note: Priority channels are now baked into the priorityBoost field in Typesense
  */
 export function getPriorityChannels(): Record<string, number> {
-  return priorityChannels;
+  // Return empty object since priority is now handled via priorityBoost field
+  return {};
 }

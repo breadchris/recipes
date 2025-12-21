@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
 
   // Use the search index to find relevant videos for this meal type
   // Only include videos with recipes, fetch more to randomize from
-  const allSuggestions = searchVideos(mealType, 30, true);
+  const allSuggestions = await searchVideos(mealType, 30, true);
 
   // Shuffle and take 8
-  const shuffled = allSuggestions.sort(() => Math.random() - 0.5);
+  const shuffled = [...allSuggestions].sort(() => Math.random() - 0.5);
   const suggestions = shuffled.slice(0, 8);
 
   return NextResponse.json({
