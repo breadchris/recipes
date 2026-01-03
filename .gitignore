@@ -40,3 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 other-data/
+data/
+
+# youtube extraction pipeline
+youtube/venv/
+youtube/__pycache__/
+youtube/.env

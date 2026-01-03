@@ -1,0 +1,165 @@
+https://www.youtube.com/@JKenjiLopezAlt
+https://www.youtube.com/@EthanChlebowski
+https://www.youtube.com/@bingingwithbabish
+https://www.youtube.com/@epicurious
+https://www.youtube.com/@AmericasTestKitchen
+https://www.youtube.com/@JoshuaWeissman
+https://www.youtube.com/@ChefJeanPierre
+
+- #cookwherever
+	- epicurious
+		- epicurious 101 {{video(https://www.youtube.com/watch?v=LsnEE5ykwCs&list=PLz3-p2q6vFYWzmnkvjYWF3vnxckIRNYEH)}}
+		- how to use knives
+			- {{video(https://www.youtube.com/watch?v=-jrzTWkHv-0&list=PLz3-p2q6vFYVmozlsVcX7egMe1Co9aiG0)}}
+	- kenji
+		- food lab basics {{video(https://www.youtube.com/watch?v=0SxlESaak_Q&list=PLXonhhg5tUSJuH6YK5UNOoT_I8TC5Sx_h)}}
+	- minute food
+		- techniques {{video(https://www.youtube.com/watch?v=cZWTYI05ZVQ&list=PLuNV04yfCmf_1DzUO7MMlQmxhvCvNIjpw)}}
+	- ethan chlebowski
+		- easy recipes {{video(https://www.youtube.com/watch?v=r8y02BR2RaE&list=PL-tYKWQOe4YNhiOsZjaf2K_XgqMkeJiQy)}}
+		- frameworks {{video(https://www.youtube.com/watch?v=OfBTvLWKlZA&list=PL-tYKWQOe4YPD-3_PD8u5impmhWj6jrNs)}}
+	- atk
+		- equipment {{video(https://www.youtube.com/watch?v=NqmszTmcRyw&list=PLnbzopdwFrnbt5uZx46gvyskyu41z7hlQ)}}
+		- what's eating dan {{video(https://www.youtube.com/watch?v=gqSpMYd0xyQ&list=PLnbzopdwFrnZc-UgGYETAQair7VzS7_Z8)}}
+	- joshua weisman but cheaper {{video(https://www.youtube.com/watch?v=Hg_zVEuYP_Y&list=PL4WiRZw8bmXt9q1_5MhZWqfhIdFg3eINH)}}
+	- babish universe
+		- {{video(https://www.youtube.com/watch?v=ZLWGRgys-RI&list=PLopY4n17t8RBbvz-Z1XmMIHohNn7oTeRj)}}
+		- basics {{video(https://www.youtube.com/watch?v=1AxLzMJIgxM&list=PLopY4n17t8RD-xx0UdVqemiSa0sRfyX19)}}
+			- {{video(https://www.youtube.com/watch?v=nbCgfiqq-5c&list=PLopY4n17t8RA8Ex9gJC4gLHA0YkOEdZ-b)}}
+	- about to eat
+		- {{video(https://www.youtube.com/watch?v=0zxHF1unLuo&list=PLiP3qHye95hJXGfkzYfqHNr7YP2HdmFji)}}
+	- acooknamedmatt
+		- soup {{video(https://www.youtube.com/watch?v=SYhl8b1gQWM&list=PL27g6IEJHIt6YXbrhRuDlkr9zzIukEhyw)}}
+	- alessandra ciuffo
+		- {{video(https://www.youtube.com/watch?v=fx05s4f19n4&list=PLW3uUMYCug-92wsdBkIuPaxRj2Ftj7qCo&index=11)}}
+	- alex
+		- sauces {{video(https://www.youtube.com/watch?v=tcDk-JcAnOw&list=PLURsDaOr8hWX1T2WSXhPwL110La-GxjYY)}}
+		- pizza {{video(https://www.youtube.com/watch?v=YbkHihvXCPg&list=PLURsDaOr8hWUl0Kli7wG74qhtIXGTHHhZ)}}
+		- meatballs {{video(https://www.youtube.com/watch?v=tzGvGhQsWOk&list=PLURsDaOr8hWWt59j2IJlPADnmU6SS-tEk)}}
+	- noel deyzel
+		- {{video(https://www.youtube.com/watch?v=RNAFDVSzFa4&list=PLT4OnqcBgyE9Yv7slz_Kg9hU8adWuYaCz)}}
+	- alton brown
+		- {{video(https://www.youtube.com/watch?v=RA5tqn6l7to&list=PLSL8Njz6ML7AqqhKWCaDVL43aM_ABr6YU)}}
+	- alvin zhou
+		- https://www.youtube.com/@AlvinKZhou/videos
+	- andy cooks
+		- classics {{video(https://www.youtube.com/watch?v=6XlMguO9r-M&list=PLtKhTy-t6gAgJ68_kv7O2GOYM_ZrfRGVI)}}
+	- ant's bbq cookout
+		- beginner bbq {{video(https://www.youtube.com/watch?v=MXfC2HTdI3Q&list=PLdGX7ca5nf2xx-nx3MX6A7tFG5hYuHsF9)}}
+	- bon appetit
+		- every way {{video(https://www.youtube.com/watch?v=hc3TEaT3WHA&list=PLKtIunYVkv_RfNmjLUZmnhtfypjTKI2QV&index=7)}}
+		- home kitchen {{video(https://www.youtube.com/watch?v=ZeGNHQ4do8A&list=PLKtIunYVkv_SdmU4BQP6-kprFmko3vdr1)}}
+	- brian lagerstrom
+		- taco {{video(https://www.youtube.com/watch?v=oWG_UXtOrXE&list=PL_f8scwrXT8t1Loa0yYWRejNb2JWJxOnb)}}
+		- casserole {{video(https://www.youtube.com/watch?v=RwO10-czkLg&list=PL_f8scwrXT8ut7l5Pu8x-YbWsLGo1uWsx)}}
+		- desserts {{video(https://www.youtube.com/watch?v=5oR29gOLyPU&list=PL_f8scwrXT8s4xDGNGLKbSPd2AF6p__HU)}}
+	- chainbaker
+		- basic dough {{video(https://www.youtube.com/watch?v=vd6tAy_IBzE&list=PLJ97q0PY0sXIsruFWikQ6gKmtFHHviKa8)}}
+		- enriched bread {{video(https://www.youtube.com/watch?v=JrmuWiwGgCo&list=PLJ97q0PY0sXJRd6dIwL3PSFGcuUjIubze)}}
+	- chef jean-pierre
+		- breakfast {{video(https://www.youtube.com/watch?v=KaKvTA9G0i4&list=PLnujfCpADfgfyYRp4Jksr3wNoqyrypKug)}}
+		- essentials in cooking {{video(https://www.youtube.com/watch?v=QjZ1LFqNWRM&list=PLnujfCpADfgepMC4L4foc3ejkMIZNdw4C)}}
+	- chefsteps
+		- quick recipes {{video(https://www.youtube.com/watch?v=7GmB8mbFv74&list=PLny_wEI6iwNepU6GUWbxTVQv10erdzu38)}}
+		- baking {{video(https://www.youtube.com/watch?v=X6AvhWDThRo&list=PLny_wEI6iwNcO1sA_HJz1nX34aLcap-a9)}}
+	- doobydobap
+		- {{video(https://www.youtube.com/watch?v=iLw11ko4gOM&list=PLwkM1QxaP343snKhk9XwJ3luHrEfYW5_z)}}
+	- ethan paff
+		- food prep {{video(https://www.youtube.com/watch?v=uJQuJqxenMY&list=PLIDg5kgCr25pXjvEJmr2z8x7OSQcFsfRr)}}
+	- fallow
+		- recipes {{video(https://www.youtube.com/watch?v=xniS7kMpW4I&list=PLJUJUu14xBI7Oq1SVTk0YPbF5YfdrXK6j)}}
+	- farnum grindtime
+		- recipes {{video(https://www.youtube.com/watch?v=M2rGA7JtMcY&list=PLVe6l8TfKaVyiynOU0J5A4hMTyhHYrpWO&index=7)}}
+	- flavor lab
+		- dinner {{video(https://www.youtube.com/watch?v=Pf5fK2vOOnQ&list=PLrnJPSRo4jRjNlyjVZiS4SPT0CQkPQb0O)}}
+	- food & wine
+		- https://www.youtube.com/@foodandwine
+	- food wishes
+		- compilations {{video(https://www.youtube.com/watch?v=ow7MYsMrM2o&list=PLhZqgyAjcCYVcVXtPNDcXXE-Wy3rbqmom)}}
+	- food yummy food
+		- asian flavors {{video(https://www.youtube.com/watch?v=mXZcrwUUrFc&list=PLjxA4hnZ1E3pnweOrKW0oKAgaoM4w6rYT&index=2)}}
+	- french cooking academy
+		- easy main dishes {{video(https://www.youtube.com/watch?v=G6gmtpBult4&list=PLuA0obhVH6CdZbtbrpaY3jkbn0E1JD2E3)}}
+	- gavin webber
+		- cheese {{video(https://www.youtube.com/watch?v=iS8gI88lIuA&list=PLJeLu-keUCHaa-2msEN6Ae9s9kJeEE3kf)}}
+	- h woo
+		- recipes {{video(https://www.youtube.com/watch?v=E3ARlJyXWNU&list=PLUh91k-thYD8xGOUPBFoXVafGkQLCxfRh)}}
+	- hanbit cho
+		- pastry technique {{video(https://www.youtube.com/watch?v=PirLE0P8tGA&list=PLsuW8F_XfsBdaOc0qvSpd3kKG3yqMDlXh)}}
+	- how to cook smarter
+		- healthy cookies {{video(https://www.youtube.com/watch?v=k4EwFQWUPcY&list=PL5E1h0wvWXpp3EWm8RjDyp9wFTzLuv-JV)}}
+	- inga lam
+		- recipe collection {{video(https://www.youtube.com/watch?v=nYsRO8uGaPA&list=PL4SyxtW2xdq0pkSg4wToTRp96VYP1ZOSo)}}
+	- Internet Shaquille
+		- recipes {{video(https://www.youtube.com/watch?v=2WsaHnTLOkA&list=PLr0nckv6sftkZ6Fj6LPWDyRNNf73Ck8gH)}}
+	- Italia Squisita
+		- Rice {{video(https://www.youtube.com/watch?v=ANZTOPW_j7k&list=PLWKLqE-7K4-bTGxXkLGL0MinF6fJmDB-s)}}
+	- jon kung
+		- chinese cooking {{video(https://www.youtube.com/watch?v=-rN3mXtzpm8&list=PL_scpUcsnla3J_QVB_OZXm1oFeipI8bEc&index=23)}}
+	- joshuacooksthendraws
+		- simple and frequent {{video(https://www.youtube.com/watch?v=rxZjHlKezoc&list=PL3MEQRk5NcpeJ-5JlI-HafJ_wpPjFgSyh)}}
+	- junskitchen
+		- japanese food {{video(https://www.youtube.com/watch?v=CdKXAMlzZ5g&list=PLyIVzbHD-NzKYISzBZLCQgyprjeltqLU9)}}
+	- Kitchen on the Cliff
+		- pasta and sauces {{video(https://www.youtube.com/watch?v=M_3qzJthfjg&list=PLGxKDLvTg19fs6DYOnSA4rKZ870PKPuA4)}}
+	- kwoowk
+		- budget cooking {{video(https://www.youtube.com/watch?v=cpm76rJUBUg&list=PLz2hPLGgsRQX7Ly0XoENdSoljKS6x1RcG)}}
+	- lifebymikeg (prohomecooks)
+		- meal prep {{video(https://www.youtube.com/watch?v=xAIerfe3m8U&list=PLt_lOWx8jR_P4L_qLI-LznchB-ENA8kFh)}}
+	- mad scientist bbq
+		- how to {{video(https://www.youtube.com/watch?v=66jTUDge9gU&list=PLw6_3mgXV_T6KSGc9V4jukK05Yg0nK9Fp)}}
+	- made with lau
+		- recipes {{video(https://www.youtube.com/watch?v=zkCoAKTbHpQ&list=PLvd5bo3J-_kqCeo5YOrBndJ2hQvBOSaQI)}}
+	- max la manna
+		- recipes {{video(https://www.youtube.com/watch?v=eiawiz7HYF0&list=PLGeyO1LSN8d15uXephs0u827BqqkP9hoz&index=2)}}
+	- mitch mai
+		- appetizers {{video(https://www.youtube.com/watch?v=KmFNfERAlEM&list=PLUTQTi4nQLUKzJyQmhBgjtx5_zdfsvY6q)}}
+	- Mob
+		- quick and easy dinners {{video(https://www.youtube.com/watch?v=KyC-qHQK9hU&list=PLYf8N48FBFEMNs1M9GiizL79Ch9qJGI-r&index=4)}}
+	- Over The Fire Cooking by Derek Wolf
+		- recipes {{video(https://www.youtube.com/watch?v=aMbGItIv_u8&list=PLA4k_45WH2O1NRC5YLvxysLicHgO_cxnM)}}
+	- Pick Up Limes
+		- recipes {{video(https://www.youtube.com/watch?v=VxTfRrXOKC0&list=PLyg91lY5j03Ictv0l_i8_1AGmog3JlWi5)}}
+	- Sam's Home Kitchen
+		- recipes {{video(https://www.youtube.com/watch?v=S9t1h1Np6Ls&list=PLr3Usy7IUKBAEjeUDozCHET5YpY3GOElx)}}
+	- Tom's Kitchen
+		- dinners in under 30 min {{video(https://www.youtube.com/watch?v=DmfbTy-_v9c&list=PLo3QpFeM5ioocPAoJT4kM_3xTyBa44zkb)}}
+	- Two Chefs and a Knife
+		- recipes {{video(https://www.youtube.com/watch?v=36EmSh-ptE4&list=PLKIQpAJ-r5QYIaERzBQ7BaCGrrQMofH0T&index=3)}}
+	- thatdudecancook
+		- todo playlist {{video(https://www.youtube.com/watch?v=xOPoTX_1rfk)}}
+		-
+	- TODO
+:logbook:
+	  	  CLOCK: [2024-12-29 Sun 14:52:08]
+:END:
+		- https://www.youtube.com/@lapatededom
+		- https://www.youtube.com/@MrMakeItHappen/playlists
+		- https://www.youtube.com/@NoWayJoseCuisine
+		- https://www.youtube.com/@oldscoolkevmo/playlists
+		- https://www.youtube.com/@Oliviatieds
+		- https://www.youtube.com/@omletpro9356
+		- https://www.youtube.com/@Omuricedaily
+		- https://www.youtube.com/@owen.han/videos
+		- https://www.youtube.com/@pepperbellypete/videos
+		- https://www.youtube.com/@PressureLuck/playlists
+		- https://www.youtube.com/@ProtoCookswithChefFrank
+		- https://www.youtube.com/@ProofBread/playlists
+		- https://www.youtube.com/@ralphknowsfood
+		- https://www.youtube.com/@Ralphthebaker
+		- https://www.youtube.com/@rickbayless
+		- https://www.youtube.com/@SauccEats/playlists
+		- https://www.youtube.com/@SenyaiGrubs
+		- https://www.youtube.com/@SipandFeast
+		- https://www.youtube.com/@SortedFood
+		- https://www.youtube.com/@SousVideEverything
+		- https://www.youtube.com/@southworth_sourdough
+		- https://www.youtube.com/@TasteShow
+		- https://www.youtube.com/@TastingHistory
+		- https://www.youtube.com/@thatdudecancook
+		- https://www.youtube.com/@ThyThan_sweetrecipes
+		- https://www.youtube.com/@UnqualifiedCooking/playlists
+		- https://www.youtube.com/@yiminglin_/playlists
+		- https://www.youtube.com/@yousuckatcooking/playlists
+-
+

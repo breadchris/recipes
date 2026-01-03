@@ -14,7 +14,7 @@ interface Video {
   channel: string;
   channel_id: string;
   channelSlug: string;
-  recipe?: any;
+  recipes?: any[];
 }
 
 interface VideoWithChannel extends Video {
@@ -77,7 +77,7 @@ async function buildSearchIndex() {
       ...video,
       channelName: channel?.name || '',
       channelFollowers: channel?.followers || 0,
-      hasRecipe: !!video.recipe,
+      hasRecipe: !!(video.recipes && video.recipes.length > 0),
     };
   });
 

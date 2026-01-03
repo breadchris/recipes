@@ -13,7 +13,7 @@ export const revalidate = 3600;
 export async function generateStaticParams() {
   const videos = await getAllVideos();
   const topVideos = videos
-    .filter(v => v.recipe)
+    .filter(v => v.recipes?.length)
     .sort((a, b) => b.view_count - a.view_count)
     .slice(0, 500);
   return topVideos.map(v => ({ videoId: v.id }));

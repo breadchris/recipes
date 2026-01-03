@@ -64,9 +64,10 @@ function LayoutToggle({ layout, onToggle }: { layout: LayoutMode; onToggle: () =
 interface RecipeDisplayProps {
   recipe: Recipe;
   videoId: string;
+  recipeIndex?: number;
 }
 
-function RecipeDisplay({ recipe, videoId }: RecipeDisplayProps) {
+function RecipeDisplay({ recipe, videoId, recipeIndex = 0 }: RecipeDisplayProps) {
   const {
     toggleIngredient,
     toggleStep,
@@ -78,7 +79,7 @@ function RecipeDisplay({ recipe, videoId }: RecipeDisplayProps) {
   const showBuyButton = useFeatureFlagsStore((state) => state.flags.showBuyButton);
   const showInstacartButton = useFeatureFlagsStore((state) => state.flags.showInstacartButton);
 
-  const progress = getProgress(videoId);
+  const progress = getProgress(videoId, recipeIndex);
   const totalSteps = recipe.instructions?.length || 0;
   const completedSteps = progress.completedSteps.length;
   const hasProgress = progress.checkedIngredients.length > 0 || completedSteps > 0;
@@ -125,11 +126,11 @@ function RecipeDisplay({ recipe, videoId }: RecipeDisplayProps) {
           </div>
           <ul className="space-y-2">
             {recipe.ingredients.map((ingredient, index) => {
-              const isChecked = isIngredientChecked(videoId, index);
+              const isChecked = isIngredientChecked(videoId, index, recipeIndex);
               return (
                 <li
                   key={index}
-                  onClick={() => toggleIngredient(videoId, index)}
+                  onClick={() => toggleIngredient(videoId, index, recipeIndex)}
                   className={`text-sm flex items-start cursor-pointer select-none transition-opacity ${
                     isChecked ? 'opacity-50' : 'opacity-100'
                   }`}
@@ -179,7 +180,7 @@ function RecipeDisplay({ recipe, videoId }: RecipeDisplayProps) {
           </span>
           {hasProgress && (
             <button
-              onClick={() => resetProgress(videoId)}
+              onClick={() => resetProgress(videoId, recipeIndex)}
               className="text-xs text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
             >
               Reset
@@ -196,11 +197,11 @@ function RecipeDisplay({ recipe, videoId }: RecipeDisplayProps) {
           </h3>
           <ol className="space-y-3">
             {recipe.instructions.map((instruction) => {
-              const isCompleted = isStepCompleted(videoId, instruction.step);
+              const isCompleted = isStepCompleted(videoId, instruction.step, recipeIndex);
               return (
                 <li
                   key={instruction.step}
-                  onClick={() => toggleStep(videoId, instruction.step)}
+                  onClick={() => toggleStep(videoId, instruction.step, recipeIndex)}
                   className={`text-sm flex items-start cursor-pointer select-none transition-opacity ${
                     isCompleted ? 'opacity-50' : 'opacity-100'
                   }`}
@@ -311,9 +312,10 @@ function RecipeDisplay({ recipe, videoId }: RecipeDisplayProps) {
 export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerProps) {
   const router = useRouter();
   const isSaved = useCookbookStore((state) => state.isSaved(video.id));
-  const hasRecipe = !!video.recipe;
-  const defaultTab = hasRecipe ? 'recipe' : (isSaved ? 'notes' : 'description');
+  const hasRecipes = !!(video.recipes && video.recipes.length > 0);
+  const defaultTab = hasRecipes ? 'recipe' : (isSaved ? 'notes' : 'description');
   const [activeTab, setActiveTab] = useState<'recipe' | 'description' | 'notes'>(defaultTab);
+  const [selectedRecipeIndex, setSelectedRecipeIndex] = useState(0);
   const [layout, setLayout] = useState<LayoutMode>('side-by-side');
 
   useEffect(() => {
@@ -339,10 +341,32 @@ export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerPr
     setActiveTab('notes');
   };
 
+  const selectedRecipe = video.recipes?.[selectedRecipeIndex];
+
   const tabContent = (
     <div className="mt-5">
-      {activeTab === 'recipe' && video.recipe ? (
-        <RecipeDisplay recipe={video.recipe} videoId={video.id} />
+      {activeTab === 'recipe' && selectedRecipe ? (
+        <>
+          {/* Recipe selector for multiple recipes */}
+          {video.recipes && video.recipes.length > 1 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {video.recipes.map((recipe, index) => (
+                <button
+                  key={index}
+                  onClick={() => setSelectedRecipeIndex(index)}
+                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                    selectedRecipeIndex === index
+                      ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                  }`}
+                >
+                  {recipe.title}
+                </button>
+              ))}
+            </div>
+          )}
+          <RecipeDisplay recipe={selectedRecipe} videoId={video.id} recipeIndex={selectedRecipeIndex} />
+        </>
       ) : activeTab === 'description' ? (
         <div className="bg-zinc-50 dark:bg-zinc-900 rounded-lg p-4 max-h-[400px] overflow-y-auto">
           <div className="text-sm text-zinc-700 dark:text-zinc-300 prose prose-sm dark:prose-invert max-w-none prose-headings:text-zinc-900 dark:prose-headings:text-zinc-50 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-strong:text-zinc-900 dark:prose-strong:text-zinc-50 prose-code:text-zinc-900 dark:prose-code:text-zinc-50">
@@ -371,7 +395,7 @@ export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerPr
   const tabs = (
     <div className="border-b border-zinc-200 dark:border-zinc-800">
       <div className="flex gap-8">
-        {hasRecipe && (
+        {hasRecipes && (
           <button
             onClick={() => setActiveTab('recipe')}
             className={`pb-3 px-1 text-sm font-medium transition-colors border-b-2 ${

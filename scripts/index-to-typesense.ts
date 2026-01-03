@@ -20,7 +20,7 @@ interface Video {
   channel: string;
   channel_id: string;
   channelSlug: string;
-  recipe?: any;
+  recipes?: any[];
 }
 
 interface VideoWithChannel extends Video {
@@ -164,7 +164,7 @@ async function indexToTypesense() {
       view_count: video.view_count || 0,
       upload_date: video.upload_date || '',
       thumbnails: JSON.stringify(video.thumbnails || []),
-      hasRecipe: !!video.recipe,
+      hasRecipe: !!(video.recipes && video.recipes.length > 0),
       priorityBoost,
     };
   });

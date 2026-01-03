@@ -116,7 +116,8 @@ function transformChannel(channel, channelSlug, recipesDir) {
       // Try to load recipe data for this video
       const recipe = loadRecipe(video.id, recipesDir);
       if (recipe) {
-        videoData.recipe = recipe;
+        // Wrap in array to support multiple recipes per video
+        videoData.recipes = [recipe];
       }
 
       return videoData;
@@ -190,7 +191,7 @@ function main() {
     const transformed = transformChannel(channel, channelSlug, hasRecipes ? recipesDir : null);
 
     // Count recipes in this channel
-    const channelRecipes = transformed.entries.filter(v => v.recipe).length;
+    const channelRecipes = transformed.entries.filter(v => v.recipes?.length).length;
     totalRecipes += channelRecipes;
 
     console.log(`  Videos: ${transformed.entries.length}`);
@@ -224,7 +225,7 @@ function main() {
       totalChannels: allChannels.length,
       totalVideos: allVideos.length,
       totalRecipes: totalRecipes,
-      videosWithRecipes: allVideos.filter(v => v.recipe).length,
+      videosWithRecipes: allVideos.filter(v => v.recipes?.length).length,
       generatedAt: new Date().toISOString()
     }
   };

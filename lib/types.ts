@@ -18,7 +18,9 @@ export interface Ingredient {
 export interface Instruction {
   step: number;
   text: string;
+  timing_confidence?: 'high' | 'medium' | 'low' | 'none';
   timestamp_seconds?: number;
+  end_time_seconds?: number;
   measurements?: {
     temperatures?: string[];
     amounts?: string[];
@@ -57,7 +59,7 @@ export interface Video {
   channel_id: string;
   channelSlug: string;
   hasRecipe?: boolean;
-  recipe?: Recipe;
+  recipes?: Recipe[];
 }
 
 export interface Channel {

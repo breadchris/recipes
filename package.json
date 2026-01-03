@@ -8,16 +8,25 @@
     "index:typesense": "tsx scripts/index-to-typesense.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "pipeline:extract": "tsx scripts/pipeline/extract.ts",
+    "pipeline:upsert": "tsx scripts/pipeline/upsert.ts",
+    "pipeline:list": "tsx scripts/pipeline/list.ts",
+    "pipeline:use": "tsx scripts/pipeline/use.ts"
   },
   "dependencies": {
     "@justinribeiro/lite-youtube": "^1.9.0",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@supabase/supabase-js": "^2.89.0",
     "amazon-paapi": "^1.0.7",
+    "lucide-react": "^0.562.0",
     "minisearch": "^7.2.0",
     "next": "^16.0.10",
+    "openai": "^6.15.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-markdown": "^10.1.0",
+    "react-player": "^3.4.0",
     "typesense": "^2.1.0",
     "zustand": "^5.0.8"
   },

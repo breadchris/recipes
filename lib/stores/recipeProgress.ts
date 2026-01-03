@@ -6,16 +6,21 @@ interface RecipeProgress {
   completedSteps: number[];      // step numbers that are completed
 }
 
+// Helper to create a key for recipe progress (supports multiple recipes per video)
+function makeKey(videoId: string, recipeIndex: number = 0): string {
+  return `${videoId}:${recipeIndex}`;
+}
+
 interface RecipeProgressStore {
   progress: Record<string, RecipeProgress>;
 
-  // Actions
-  toggleIngredient: (videoId: string, index: number) => void;
-  toggleStep: (videoId: string, stepNumber: number) => void;
-  isIngredientChecked: (videoId: string, index: number) => boolean;
-  isStepCompleted: (videoId: string, stepNumber: number) => boolean;
-  getProgress: (videoId: string) => RecipeProgress;
-  resetProgress: (videoId: string) => void;
+  // Actions - now take optional recipeIndex parameter
+  toggleIngredient: (videoId: string, index: number, recipeIndex?: number) => void;
+  toggleStep: (videoId: string, stepNumber: number, recipeIndex?: number) => void;
+  isIngredientChecked: (videoId: string, index: number, recipeIndex?: number) => boolean;
+  isStepCompleted: (videoId: string, stepNumber: number, recipeIndex?: number) => boolean;
+  getProgress: (videoId: string, recipeIndex?: number) => RecipeProgress;
+  resetProgress: (videoId: string, recipeIndex?: number) => void;
 }
 
 const emptyProgress: RecipeProgress = {
@@ -28,9 +33,10 @@ export const useRecipeProgressStore = create<RecipeProgressStore>()(
     (set, get) => ({
       progress: {},
 
-      toggleIngredient: (videoId, index) => {
+      toggleIngredient: (videoId, index, recipeIndex = 0) => {
+        const key = makeKey(videoId, recipeIndex);
         set((state) => {
-          const current = state.progress[videoId] || emptyProgress;
+          const current = state.progress[key] || emptyProgress;
           const checked = current.checkedIngredients.includes(index)
             ? current.checkedIngredients.filter((i) => i !== index)
             : [...current.checkedIngredients, index];
@@ -38,7 +44,7 @@ export const useRecipeProgressStore = create<RecipeProgressStore>()(
           return {
             progress: {
               ...state.progress,
-              [videoId]: {
+              [key]: {
                 ...current,
                 checkedIngredients: checked,
               },
@@ -47,9 +53,10 @@ export const useRecipeProgressStore = create<RecipeProgressStore>()(
         });
       },
 
-      toggleStep: (videoId, stepNumber) => {
+      toggleStep: (videoId, stepNumber, recipeIndex = 0) => {
+        const key = makeKey(videoId, recipeIndex);
         set((state) => {
-          const current = state.progress[videoId] || emptyProgress;
+          const current = state.progress[key] || emptyProgress;
           const completed = current.completedSteps.includes(stepNumber)
             ? current.completedSteps.filter((s) => s !== stepNumber)
             : [...current.completedSteps, stepNumber];
@@ -57,7 +64,7 @@ export const useRecipeProgressStore = create<RecipeProgressStore>()(
           return {
             progress: {
               ...state.progress,
-              [videoId]: {
+              [key]: {
                 ...current,
                 completedSteps: completed,
               },
@@ -66,24 +73,28 @@ export const useRecipeProgressStore = create<RecipeProgressStore>()(
         });
       },
 
-      isIngredientChecked: (videoId, index) => {
-        const progress = get().progress[videoId];
+      isIngredientChecked: (videoId, index, recipeIndex = 0) => {
+        const key = makeKey(videoId, recipeIndex);
+        const progress = get().progress[key];
         return progress?.checkedIngredients.includes(index) ?? false;
       },
 
-      isStepCompleted: (videoId, stepNumber) => {
-        const progress = get().progress[videoId];
+      isStepCompleted: (videoId, stepNumber, recipeIndex = 0) => {
+        const key = makeKey(videoId, recipeIndex);
+        const progress = get().progress[key];
         return progress?.completedSteps.includes(stepNumber) ?? false;
       },
 
-      getProgress: (videoId) => {
-        return get().progress[videoId] || emptyProgress;
+      getProgress: (videoId, recipeIndex = 0) => {
+        const key = makeKey(videoId, recipeIndex);
+        return get().progress[key] || emptyProgress;
       },
 
-      resetProgress: (videoId) => {
+      resetProgress: (videoId, recipeIndex = 0) => {
+        const key = makeKey(videoId, recipeIndex);
         set((state) => {
           const newProgress = { ...state.progress };
-          delete newProgress[videoId];
+          delete newProgress[key];
           return { progress: newProgress };
         });
       },
