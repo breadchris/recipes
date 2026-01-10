@@ -1,0 +1,227 @@
+{
+  "version": "1.0",
+  "categories": {
+    "meal": {
+      "displayName": "By Meal",
+      "tags": [
+        { "id": "breakfast-brunch", "name": "Breakfast & Brunch", "aliases": ["breakfast", "brunch"] },
+        { "id": "lunch", "name": "Lunch", "aliases": [] },
+        { "id": "dinner", "name": "Dinner", "aliases": ["main course", "supper"] },
+        { "id": "snacks", "name": "Snacks", "aliases": ["snack"] },
+        { "id": "desserts", "name": "Desserts", "aliases": ["dessert"] }
+      ]
+    },
+    "protein": {
+      "displayName": "By Protein",
+      "tags": [
+        { "id": "chicken-dishes", "name": "Chicken Dishes", "aliases": ["chicken"] },
+        { "id": "beef", "name": "Beef", "aliases": ["steak", "beef dishes"] },
+        { "id": "pork", "name": "Pork", "aliases": ["pork dishes"] },
+        { "id": "seafood", "name": "Seafood", "aliases": ["fish", "shrimp"] },
+        { "id": "vegetarian", "name": "Vegetarian", "aliases": [] },
+        { "id": "vegan", "name": "Vegan", "aliases": [] },
+        { "id": "egg-dishes", "name": "Egg Dishes", "aliases": ["eggs"] },
+        { "id": "tofu-plant-proteins", "name": "Tofu & Plant Proteins", "aliases": ["tofu", "tempeh"] }
+      ]
+    },
+    "carb": {
+      "displayName": "Carbs & Staples",
+      "tags": [
+        { "id": "pasta", "name": "Pasta", "aliases": ["spaghetti", "lasagna", "gnocchi"] },
+        { "id": "rice-grain-bowls", "name": "Rice & Grain Bowls", "aliases": ["rice dishes", "fried rice", "rice"] },
+        { "id": "bread-baking", "name": "Bread & Baking", "aliases": ["bread"] },
+        { "id": "pizza-flatbreads", "name": "Pizza & Flatbreads", "aliases": ["pizza", "flatbread"] },
+        { "id": "noodles-dumplings", "name": "Noodles & Dumplings", "aliases": ["asian noodles", "dumplings", "noodle", "noodles", "ramen"] },
+        { "id": "potatoes", "name": "Potatoes", "aliases": ["potato dishes", "french fries"] }
+      ]
+    },
+    "cuisine": {
+      "displayName": "By Cuisine",
+      "tags": [
+        { "id": "italian", "name": "Italian", "aliases": [] },
+        { "id": "mexican-latin", "name": "Mexican & Latin", "aliases": ["mexican", "latin", "tacos", "quesadilla"] },
+        { "id": "american", "name": "American", "aliases": ["american comfort", "burger", "grilled cheese", "mac and cheese"] },
+        { "id": "french", "name": "French", "aliases": ["french dishes"] },
+        { "id": "chinese", "name": "Chinese", "aliases": [] },
+        { "id": "japanese", "name": "Japanese", "aliases": ["japanese dishes"] },
+        { "id": "korean", "name": "Korean", "aliases": [] },
+        { "id": "indian", "name": "Indian", "aliases": ["indian dishes"] },
+        { "id": "thai", "name": "Thai", "aliases": [] },
+        { "id": "middle-eastern", "name": "Middle Eastern", "aliases": [] },
+        { "id": "mediterranean", "name": "Mediterranean", "aliases": [] }
+      ]
+    },
+    "side": {
+      "displayName": "Sides & Supporting",
+      "tags": [
+        { "id": "salads", "name": "Salads", "aliases": ["salad"] },
+        { "id": "vegetable-sides", "name": "Vegetable Sides", "aliases": ["vegetables & sides", "vegetable", "roasted vegetables"] },
+        { "id": "soups-stews", "name": "Soups & Stews", "aliases": ["soups", "soup", "stew"] },
+        { "id": "appetizers", "name": "Appetizers", "aliases": ["appetizer", "starter"] },
+        { "id": "sauces-condiments", "name": "Sauces & Condiments", "aliases": ["sauce", "sauces & condiments", "condiment"] },
+        { "id": "pickles-ferments", "name": "Pickles & Ferments", "aliases": ["pickles", "fermented"] }
+      ]
+    },
+    "technique": {
+      "displayName": "By Technique",
+      "tags": [
+        { "id": "one-pan-meals", "name": "One-Pan Meals", "aliases": ["one pot", "sheet pan"] },
+        { "id": "grilling", "name": "Grilling", "aliases": ["grilled", "bbq", "grilled chicken"] },
+        { "id": "roasting", "name": "Roasting", "aliases": ["roasted", "roast"] },
+        { "id": "slow-cooker", "name": "Slow Cooker", "aliases": ["crockpot"] },
+        { "id": "pressure-cooker", "name": "Pressure Cooker", "aliases": ["instant pot"] },
+        { "id": "no-cook", "name": "No-Cook", "aliases": ["raw", "no bake"] },
+        { "id": "baking", "name": "Baking", "aliases": ["baked"] },
+        { "id": "frying", "name": "Frying", "aliases": ["fried", "deep fried", "fried foods", "fried chicken", "stir fry"] }
+      ]
+    },
+    "practical": {
+      "displayName": "Practical Filters",
+      "tags": [
+        { "id": "quick-easy", "name": "Quick & Easy", "aliases": ["easy", "quick"] },
+        { "id": "budget-friendly", "name": "Budget-Friendly", "aliases": ["cheap", "budget"] },
+        { "id": "meal-prep", "name": "Meal Prep", "aliases": ["batch cooking"] },
+        { "id": "family-friendly", "name": "Family-Friendly", "aliases": ["kid-friendly"] },
+        { "id": "healthy", "name": "Healthy", "aliases": ["light", "low calorie"] },
+        { "id": "comfort-food", "name": "Comfort Food", "aliases": ["comfort"] },
+        { "id": "weeknight", "name": "Weeknight", "aliases": ["weeknight dinner"] },
+        { "id": "entertaining", "name": "Entertaining", "aliases": ["party", "holiday"] }
+      ]
+    }
+  },
+  "legacyMappings": {
+    "recipeType": {
+      "Desserts": "desserts",
+      "Pasta": "pasta",
+      "Chicken Dishes": "chicken-dishes",
+      "Seafood": "seafood",
+      "Pizza": "pizza-flatbreads",
+      "Salads": "salads",
+      "Sauces & Condiments": "sauces-condiments",
+      "Mexican & Latin": "mexican-latin",
+      "Steak": "beef",
+      "Bread": "bread-baking",
+      "Burger": "american",
+      "Tacos": "mexican-latin",
+      "Potato Dishes": "potatoes",
+      "Soups": "soups-stews",
+      "Beverages": null,
+      "Sandwich": null,
+      "Vegetables & Sides": "vegetable-sides",
+      "Pancakes": "breakfast-brunch",
+      "Fried Rice": "rice-grain-bowls",
+      "Indian Dishes": "indian",
+      "Egg Dishes": "egg-dishes",
+      "Pork Dishes": "pork",
+      "Beef Dishes": "beef",
+      "Rice Dishes": "rice-grain-bowls",
+      "Asian Noodles": "noodles-dumplings",
+      "Chicken": "chicken-dishes",
+      "French Toast": "breakfast-brunch",
+      "Ice Cream": "desserts",
+      "Japanese Dishes": "japanese",
+      "French Dishes": "french",
+      "Quesadilla": "mexican-latin",
+      "Mac And Cheese": "american",
+      "Stir Fry": "frying",
+      "Noodles": "noodles-dumplings",
+      "Fried Chicken": "frying",
+      "Turkey Dishes": "chicken-dishes",
+      "Ramen": "noodles-dumplings",
+      "Sauce": "sauces-condiments",
+      "Grilled Cheese": "american",
+      "Chicken Wings": "chicken-dishes",
+      "Soup": "soups-stews",
+      "Grilled Chicken": "grilling",
+      "Gnocchi": "pasta",
+      "French Fries": "potatoes",
+      "Lasagna": "pasta",
+      "Breakfast": "breakfast-brunch",
+      "Fried Foods": "frying",
+      "Roasted Vegetables": "vegetable-sides",
+      "Lamb Dishes": null,
+      "Cheese Dishes": null,
+      "Roast Turkey": "chicken-dishes",
+      "Chocolate Crinkle Cookies": "desserts",
+      "Pavlova": "desserts",
+      "Eggs Benedict": "egg-dishes",
+      "Potato Hash": "potatoes",
+      "Curry": "indian",
+      "Energy Balls": "snacks",
+      "Caprese Salad": "salads",
+      "Hot Chocolate": null,
+      "Shrimp Scampi": "seafood",
+      "Chicken Nuggets": "chicken-dishes",
+      "Macaroni And Cheese": "american"
+    },
+    "foodType": {
+      "burger": "american",
+      "pizza": "pizza-flatbreads",
+      "pasta": "pasta",
+      "chicken": "chicken-dishes",
+      "beef": "beef",
+      "pork": "pork",
+      "seafood": "seafood",
+      "vegetable": null,
+      "bread": "bread-baking",
+      "dessert": "desserts",
+      "breakfast": "breakfast-brunch",
+      "soup": "soups-stews",
+      "salad": "salads",
+      "sandwich": null,
+      "asian": null,
+      "mexican": "mexican-latin",
+      "italian": "italian",
+      "french": "french",
+      "noodle": "noodles-dumplings",
+      "appetizer": "appetizers",
+      "drink": null,
+      "casserole": null,
+      "bbq": "grilling",
+      "sauce": "sauces-condiments"
+    },
+    "mealType": {
+      "dinner": "dinner",
+      "main course": "dinner",
+      "lunch": "lunch",
+      "breakfast": "breakfast-brunch",
+      "brunch": "breakfast-brunch",
+      "snack": "snacks",
+      "dessert": "desserts",
+      "appetizer": "appetizers",
+      "side dish": "vegetable-sides",
+      "soup": "soups-stews",
+      "salad": "salads",
+      "beverage": null,
+      "condiment": "sauces-condiments",
+      "sauce": "sauces-condiments"
+    },
+    "cuisineType": {
+      "american": "american",
+      "italian": "italian",
+      "mexican": "mexican-latin",
+      "french": "french",
+      "chinese": "chinese",
+      "japanese": "japanese",
+      "korean": "korean",
+      "indian": "indian",
+      "thai": "thai",
+      "middle eastern": "middle-eastern",
+      "mediterranean": "mediterranean",
+      "comfort food": "comfort-food",
+      "fusion": null,
+      "asian": null,
+      "latin": "mexican-latin",
+      "spanish": "mediterranean",
+      "greek": "mediterranean"
+    },
+    "dietaryTags": {
+      "vegetarian": "vegetarian",
+      "vegan": "vegan",
+      "gluten-free": null,
+      "dairy-free": null,
+      "can be vegetarian": "vegetarian",
+      "can be vegan": "vegan"
+    }
+  }
+}
