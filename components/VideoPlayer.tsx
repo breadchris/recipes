@@ -4,6 +4,8 @@ import { forwardRef, useImperativeHandle, useRef, useEffect, useState } from 're
 
 export interface VideoPlayerHandle {
   seekTo: (seconds: number) => void;
+  activateAndSeek: (seconds: number) => void;
+  isActivated: () => boolean;
 }
 
 interface VideoPlayerProps {
@@ -17,6 +19,7 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const [isActivated, setIsActivated] = useState(playing);
     const [liteYouTubeLoaded, setLiteYouTubeLoaded] = useState(false);
+    const pendingSeekRef = useRef<number | null>(null);
 
     // Dynamically import lite-youtube web component on client only
     useEffect(() => {
@@ -35,7 +38,24 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
           );
         }
       },
-    }));
+      activateAndSeek: (seconds: number) => {
+        if (isActivated) {
+          // Already activated, just seek
+          const iframe = containerRef.current?.querySelector('iframe');
+          if (iframe?.contentWindow) {
+            iframe.contentWindow.postMessage(
+              JSON.stringify({ event: 'command', func: 'seekTo', args: [seconds, true] }),
+              '*'
+            );
+          }
+        } else {
+          // Store pending seek and activate
+          pendingSeekRef.current = seconds;
+          setIsActivated(true);
+        }
+      },
+      isActivated: () => isActivated,
+    }), [isActivated]);
 
     // Auto-activate if playing prop is true
     useEffect(() => {
@@ -43,6 +63,30 @@ export const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
         setIsActivated(true);
       }
     }, [playing, isActivated]);
+
+    // Handle pending seek after iframe loads
+    useEffect(() => {
+      if (!isActivated || pendingSeekRef.current === null) return;
+
+      const seekTime = pendingSeekRef.current;
+      pendingSeekRef.current = null;
+
+      // Wait for iframe to be ready, then seek
+      const checkAndSeek = () => {
+        const iframe = containerRef.current?.querySelector('iframe');
+        if (iframe?.contentWindow) {
+          // Give the iframe a moment to initialize the YouTube API
+          setTimeout(() => {
+            iframe.contentWindow?.postMessage(
+              JSON.stringify({ event: 'command', func: 'seekTo', args: [seekTime, true] }),
+              '*'
+            );
+          }, 500);
+        }
+      };
+
+      checkAndSeek();
+    }, [isActivated]);
 
     // Listen for video end events from YouTube iframe
     useEffect(() => {

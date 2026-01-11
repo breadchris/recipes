@@ -40,7 +40,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 other-data/
-data/
+
+# Ignore all data directory contents by default
+data/*
+# But include these files needed for production builds
+!data/recipes-data.json.gz
+!data/tag-taxonomy.json
+!data/recipe-type-groups.json
+!data/priority-channels.json
+!data/search-index.json
 
 # youtube extraction pipeline
 youtube/venv/

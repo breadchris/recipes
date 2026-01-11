@@ -29,6 +29,66 @@ def validate_youtube_url(url: str) -> bool:
     except YoutubeDLError:
         return False
 
+class LambdaExtractor:
+    """Extract videos using AWS Lambda instead of direct YouTube scraping."""
+
+    def __init__(self, function_name='youtube-extractor-dev', region='us-east-1', bucket_name='recipes-youtube-cache-dev'):
+        import boto3
+        self.lambda_client = boto3.client('lambda', region_name=region)
+        self.s3_client = boto3.client('s3', region_name=region)
+        self.function_name = function_name
+        self.bucket_name = bucket_name
+        ensure_cache_dir()
+
+    def extract_video(self, video_id: str, skip_cache: bool = False) -> dict:
+        """Invoke Lambda to extract video data synchronously."""
+        payload = {
+            "body": json.dumps({
+                "videoUrl": f"https://www.youtube.com/watch?v={video_id}",
+                "options": {"skipCache": skip_cache}
+            })
+        }
+
+        response = self.lambda_client.invoke(
+            FunctionName=self.function_name,
+            InvocationType='RequestResponse',
+            Payload=json.dumps(payload)
+        )
+
+        result = json.loads(response['Payload'].read())
+        body = json.loads(result.get('body', '{}'))
+        return body
+
+    def extract_video_async(self, video_id: str) -> None:
+        """Invoke Lambda asynchronously (fire and forget)."""
+        payload = {
+            "body": json.dumps({
+                "videoUrl": f"https://www.youtube.com/watch?v={video_id}"
+            })
+        }
+
+        self.lambda_client.invoke(
+            FunctionName=self.function_name,
+            InvocationType='Event',
+            Payload=json.dumps(payload)
+        )
+
+    def sync_from_s3(self, video_ids: list) -> int:
+        """Sync extracted videos from S3 to local cache."""
+        synced = 0
+        for video_id in video_ids:
+            s3_key = f"combined/{video_id}.json.gz"
+            local_path = os.path.join(CACHE_DIR, f"{video_id}.json.gz")
+
+            try:
+                self.s3_client.download_file(self.bucket_name, s3_key, local_path)
+                synced += 1
+            except Exception:
+                pass  # File may not exist yet
+
+        return synced
+
+
 class VideoExtractor:
     def __init__(self, proxy: Optional[str] = None):
         ensure_cache_dir()
@@ -46,6 +106,8 @@ class VideoExtractor:
             'sleep_interval': 2,  # Sleep 2 seconds after each video extraction
             'max_sleep_interval': 5,  # Random sleep between 2-5 seconds
             'sleep_interval_requests': 1,  # 1 second between API requests
+            # Enable remote JS challenge solver to handle YouTube's anti-bot measures
+            'remote_components': 'ejs:github',
         }
 
         if proxy:

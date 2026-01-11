@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 """
+DEPRECATED: Use the TypeScript version instead:
+  npm run pipeline:generate
+
+This Python script is deprecated in favor of the TypeScript version at
+pipeline/generate.ts which uses the same AI prompt as the admin viewer.
+
+---
+
 Generate structured recipe JSON files from video transcripts using OpenAI.
 """
 
@@ -209,16 +217,30 @@ def ensure_recipes_dir():
         os.makedirs(RECIPES_DIR, exist_ok=True)
 
 def get_transcript_files():
-    """Get list of all transcript VTT files"""
-    vtt_files = []
+    """Get list of all video IDs with transcripts (VTT or Lambda format)"""
+    video_ids = set()
     for filename in os.listdir(CACHE_DIR):
+        # Old format: separate .vtt.gz files
         if filename.endswith('.vtt.gz'):
             video_id = filename.replace('.vtt.gz', '')
-            vtt_files.append(video_id)
-    return sorted(vtt_files)
+            video_ids.add(video_id)
+        # Lambda format: .json.gz with embedded transcript
+        elif filename.endswith('.json.gz') and not filename.startswith('channel_'):
+            video_id = filename.replace('.json.gz', '')
+            # YouTube video IDs are 11 characters
+            if len(video_id) == 11:
+                # Check if it has embedded transcript
+                try:
+                    with gzip.open(os.path.join(CACHE_DIR, filename), 'rt', encoding='utf-8') as f:
+                        data = json.load(f)
+                        if data.get('transcript'):
+                            video_ids.add(video_id)
+                except:
+                    pass
+    return sorted(video_ids)
 
 def load_video_metadata(video_id: str) -> Optional[Dict]:
-    """Load video metadata from cache"""
+    """Load video metadata from cache (handles both old and Lambda formats)"""
     metadata_file = os.path.join(CACHE_DIR, f'{video_id}.json.gz')
 
     if not os.path.isfile(metadata_file):
@@ -227,28 +249,71 @@ def load_video_metadata(video_id: str) -> Optional[Dict]:
 
     try:
         with gzip.open(metadata_file, 'rt', encoding='utf-8') as f:
-            return json.load(f)
+            data = json.load(f)
+            # Lambda format: metadata nested under 'metadata' key
+            if 'metadata' in data and isinstance(data['metadata'], dict):
+                return data['metadata']
+            # Old format: metadata at root
+            return data
     except Exception as e:
         print(f'  ✗ Error loading metadata: {e}', file=sys.stderr)
         return None
 
 def load_raw_vtt(video_id: str) -> Optional[str]:
-    """Load raw VTT content from file"""
+    """Load raw VTT content from file (handles both VTT and Lambda formats)"""
     vtt_file = os.path.join(CACHE_DIR, f'{video_id}.vtt.gz')
 
-    if not os.path.isfile(vtt_file):
-        return None
+    # Try loading from .vtt.gz file first
+    if os.path.isfile(vtt_file):
+        try:
+            with gzip.open(vtt_file, 'rt', encoding='utf-8') as f:
+                return f.read()
+        except Exception as e:
+            print(f'  ✗ Error loading VTT: {e}', file=sys.stderr)
 
-    try:
-        with gzip.open(vtt_file, 'rt', encoding='utf-8') as f:
-            return f.read()
-    except Exception as e:
-        print(f'  ✗ Error loading VTT: {e}', file=sys.stderr)
-        return None
+    # Try loading from Lambda format (embedded in .json.gz)
+    json_file = os.path.join(CACHE_DIR, f'{video_id}.json.gz')
+    if os.path.isfile(json_file):
+        try:
+            with gzip.open(json_file, 'rt', encoding='utf-8') as f:
+                data = json.load(f)
+                # Lambda format stores segments for VTT-like searching
+                if data.get('transcript', {}).get('segments'):
+                    # Convert segments to VTT format for keyword search
+                    segments = data['transcript']['segments']
+                    vtt_lines = ['WEBVTT', '']
+                    for seg in segments:
+                        start = seg.get('startTime', 0)
+                        end = seg.get('endTime', start + 1)
+                        text = seg.get('text', '')
+                        # Format timestamps as HH:MM:SS.mmm
+                        start_ts = f"{int(start//3600):02d}:{int((start%3600)//60):02d}:{start%60:06.3f}"
+                        end_ts = f"{int(end//3600):02d}:{int((end%3600)//60):02d}:{end%60:06.3f}"
+                        vtt_lines.append(f"{start_ts} --> {end_ts}")
+                        vtt_lines.append(text)
+                        vtt_lines.append('')
+                    return '\n'.join(vtt_lines)
+        except Exception as e:
+            print(f'  ✗ Error loading VTT from JSON: {e}', file=sys.stderr)
+
+    return None
 
 
 def parse_transcript_text(video_id: str) -> Optional[str]:
-    """Parse VTT transcript to plain text"""
+    """Parse transcript to plain text (handles both VTT and Lambda formats)"""
+
+    # First try Lambda format which already has plainText
+    json_file = os.path.join(CACHE_DIR, f'{video_id}.json.gz')
+    if os.path.isfile(json_file):
+        try:
+            with gzip.open(json_file, 'rt', encoding='utf-8') as f:
+                data = json.load(f)
+                if data.get('transcript', {}).get('plainText'):
+                    return data['transcript']['plainText']
+        except Exception as e:
+            print(f'  ✗ Error loading plainText from JSON: {e}', file=sys.stderr)
+
+    # Fall back to VTT parsing
     vtt_content = load_raw_vtt(video_id)
 
     if not vtt_content:
@@ -545,6 +610,11 @@ def main():
         action='store_true',
         help='Skip videos that already have recipe files'
     )
+    parser.add_argument(
+        '--channel',
+        type=str,
+        help='Filter by channel name (partial match)'
+    )
 
     args = parser.parse_args()
 
@@ -554,6 +624,19 @@ def main():
 
     # Get all transcript files
     video_ids = get_transcript_files()
+
+    # Filter by channel if specified
+    if args.channel:
+        print(f'Filtering by channel: {args.channel}', file=sys.stderr)
+        filtered_ids = []
+        for video_id in video_ids:
+            metadata = load_video_metadata(video_id)
+            if metadata:
+                channel = metadata.get('channel', '')
+                if args.channel.lower() in channel.lower():
+                    filtered_ids.append(video_id)
+        video_ids = filtered_ids
+        print(f'Found {len(video_ids)} videos from channel matching "{args.channel}"', file=sys.stderr)
 
     if args.limit:
         video_ids = video_ids[:args.limit]

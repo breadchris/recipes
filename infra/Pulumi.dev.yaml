@@ -1,0 +1,10 @@
+config:
+  aws:region: us-east-1
+  recipes-youtube-infra:logLevel: DEBUG
+  recipes-youtube-infra:cacheTtlDays: "30"
+  recipes-youtube-infra:maxConcurrency: "3"
+  recipes-youtube-infra:proxyUrl: "http://pr.oxylabs.io:7777"
+  recipes-youtube-infra:proxyUsername: "customer-proxyuser_DdL6Q"
+  recipes-youtube-infra:proxyPassword:
+    secure: v1:IvwWRpC82PXu3QZ8:0y4WE/RI/DRrnodzDHcBqsim4p6No7FGKO8G09ux+vos9vOO9A==
+encryptionsalt: v1:NZbEjbwM+mw=:v1:jdm0vo43QBWBwQAf:ZcsHO1lKTT3bCHprE+1v6ObiVX967g==

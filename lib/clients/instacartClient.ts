@@ -1,6 +1,9 @@
 import type { Ingredient, Recipe } from '../types';
 
-const INSTACART_API_URL = 'https://connect.dev.instacart.tools/idp/v1/products/recipe';
+const INSTACART_RECIPE_API_URL =
+  'https://connect.instacart.com/idp/v1/products/recipe';
+const INSTACART_SHOPPING_LIST_API_URL =
+  'https://connect.instacart.com/idp/v1/products/products_link';
 
 // Request types
 export interface InstacartMeasurement {
@@ -41,6 +44,15 @@ export interface InstacartRecipeRequest {
   landing_page_configuration?: InstacartLandingPageConfiguration;
 }
 
+export interface InstacartShoppingListRequest {
+  title: string;
+  image_url?: string;
+  link_type: 'shopping_list';
+  line_items: InstacartLineItem[];
+  expires_in?: number;
+  landing_page_configuration?: InstacartLandingPageConfiguration;
+}
+
 // Response types
 export interface InstacartRecipeResponse {
   products_link_url: string;
@@ -56,27 +68,60 @@ export interface InstacartError {
  * Check if Instacart API is configured
  */
 export function isInstacartConfigured(): boolean {
-  return !!process.env.INSTACART_API;
+  return !!(process.env.INSTACART_PROD_API || process.env.INSTACART_API);
 }
 
 /**
  * Create an Instacart recipe page and return the checkout URL
+ * @deprecated Use createShoppingListPage instead
  */
 export async function createRecipePage(
   request: InstacartRecipeRequest
 ): Promise<InstacartRecipeResponse> {
-  const apiKey = process.env.INSTACART_API;
+  const apiKey = process.env.INSTACART_PROD_API || process.env.INSTACART_API;
 
   if (!apiKey) {
-    throw new Error('INSTACART_API environment variable is not configured');
+    throw new Error('INSTACART_PROD_API or INSTACART_API environment variable is not configured');
   }
 
-  const response = await fetch(INSTACART_API_URL, {
+  const response = await fetch(INSTACART_RECIPE_API_URL, {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
+      Accept: 'application/json',
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(
+      `Instacart API error (${response.status}): ${errorData.message || response.statusText}`
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * Create an Instacart shopping list page and return the URL
+ */
+export async function createShoppingListPage(
+  request: InstacartShoppingListRequest
+): Promise<InstacartRecipeResponse> {
+  const apiKey = process.env.INSTACART_PROD_API || process.env.INSTACART_API;
+
+  if (!apiKey) {
+    throw new Error('INSTACART_PROD_API or INSTACART_API environment variable is not configured');
+  }
+
+  const response = await fetch(INSTACART_SHOPPING_LIST_API_URL, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify(request),
   });
@@ -201,7 +246,52 @@ export function convertIngredientsToLineItems(ingredients: Ingredient[]): Instac
 }
 
 /**
+ * Create an Instacart shopping list from ingredients
+ * This is a simplified version that only sends ingredients, not full recipe data
+ */
+export async function createShoppingListFromIngredients(
+  title: string,
+  ingredients: Ingredient[],
+  options?: {
+    imageUrl?: string;
+    partnerLinkbackUrl?: string;
+    enablePantryItems?: boolean;
+    expiresInDays?: number;
+  }
+): Promise<InstacartRecipeResponse> {
+  const request: InstacartShoppingListRequest = {
+    title,
+    link_type: 'shopping_list',
+    line_items: convertIngredientsToLineItems(ingredients),
+  };
+
+  // Add optional fields
+  if (options?.imageUrl) {
+    request.image_url = options.imageUrl;
+  }
+  if (options?.expiresInDays) {
+    request.expires_in = options.expiresInDays;
+  }
+
+  // Add landing page configuration
+  if (options?.partnerLinkbackUrl || options?.enablePantryItems) {
+    request.landing_page_configuration = {};
+    if (options.partnerLinkbackUrl) {
+      request.landing_page_configuration.partner_linkback_url =
+        options.partnerLinkbackUrl;
+    }
+    if (options.enablePantryItems !== undefined) {
+      request.landing_page_configuration.enable_pantry_items =
+        options.enablePantryItems;
+    }
+  }
+
+  return createShoppingListPage(request);
+}
+
+/**
  * Create an Instacart recipe page from a Recipe object
+ * @deprecated Use createShoppingListFromIngredients instead
  */
 export async function createRecipePageFromRecipe(
   recipe: Recipe,

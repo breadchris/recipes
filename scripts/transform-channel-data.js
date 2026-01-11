@@ -7,6 +7,41 @@ const { gunzipSync, gzipSync } = require('zlib');
 function loadRecipe(videoId, recipesDir) {
   if (!recipesDir) return null;
 
+  // Try versioned format first
+  const versionedDir = path.join(recipesDir, videoId, 'versions');
+  const currentVersionFile = path.join(recipesDir, videoId, 'current_version.txt');
+
+  try {
+    if (fs.existsSync(currentVersionFile) && fs.existsSync(versionedDir)) {
+      const currentVersion = fs.readFileSync(currentVersionFile, 'utf-8').trim();
+      const versionFile = path.join(versionedDir, `v${currentVersion}.json`);
+
+      if (fs.existsSync(versionFile)) {
+        const versionedData = JSON.parse(fs.readFileSync(versionFile, 'utf-8'));
+        const recipe = versionedData.recipe;
+
+        if (!recipe) {
+          return null;
+        }
+
+        // If has_recipe is false but cleaned_transcript exists, return just the transcript
+        if (!recipe.has_recipe) {
+          if (recipe.cleaned_transcript) {
+            return { cleaned_transcript: recipe.cleaned_transcript };
+          }
+          return null;
+        }
+
+        // Return recipe data with cleaned_transcript, excluding internal flags
+        const { has_recipe, video_id, video_url, upload_date, ...recipeContent } = recipe;
+        return recipeContent;
+      }
+    }
+  } catch (error) {
+    console.error(`  Warning: Failed to load versioned recipe for ${videoId}: ${error.message}`);
+  }
+
+  // Fall back to legacy format
   const recipeFile = path.join(recipesDir, `${videoId}_recipe.json`);
 
   try {
@@ -114,10 +149,23 @@ function transformChannel(channel, channelSlug, recipesDir) {
       };
 
       // Try to load recipe data for this video
-      const recipe = loadRecipe(video.id, recipesDir);
-      if (recipe) {
-        // Wrap in array to support multiple recipes per video
-        videoData.recipes = [recipe];
+      const recipeData = loadRecipe(video.id, recipesDir);
+      if (recipeData) {
+        // Extract recipes array and cleaned_transcript
+        const { recipes, cleaned_transcript, ...legacyRecipe } = recipeData;
+
+        if (recipes && Array.isArray(recipes) && recipes.length > 0) {
+          // New format: recipes is already an array
+          videoData.recipes = recipes;
+        } else if (Object.keys(legacyRecipe).length > 0) {
+          // Legacy format: wrap single recipe content in array (only if not empty)
+          videoData.recipes = [legacyRecipe];
+        }
+
+        // Add cleaned_transcript at video level if present
+        if (cleaned_transcript) {
+          videoData.cleaned_transcript = cleaned_transcript;
+        }
       }
 
       return videoData;

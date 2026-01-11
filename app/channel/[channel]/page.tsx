@@ -9,8 +9,12 @@ interface ChannelPageProps {
 // Enable ISR - revalidate cached pages every hour
 export const revalidate = 3600;
 
-// Pre-generate all channel pages at build time (only 37 channels)
+// Skip static generation in Vercel builds to avoid OOM
+// Channel pages will be generated on-demand and cached via ISR
 export async function generateStaticParams() {
+  if (process.env.VERCEL) {
+    return [];
+  }
   const channels = await getAllChannels();
   return channels.map(c => ({ channel: c.channelSlug }));
 }

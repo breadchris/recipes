@@ -27,3 +27,4 @@ export const typesenseAdminClient = new Typesense.Client({
 });
 
 export const COLLECTION_NAME = 'recipes';
+export const SCRAPED_COLLECTION_NAME = 'scraped-recipes';

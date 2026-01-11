@@ -15,11 +15,12 @@ export interface VideoReference {
 export interface AdminInstruction {
   step: number;
   text: string;
+  section_id?: string; // References CleanedTranscriptSection.id
   timing_confidence: 'high' | 'medium' | 'low' | 'none';
   timestamp_seconds?: number;
   end_time_seconds?: number;
   keywords: {
-    ingredients: string[];
+    ingredients: AdminIngredient[];
     techniques: string[];
     equipment: string[];
   } | null;
@@ -63,6 +64,7 @@ export interface AdminRecipeContent {
 // Video-level wrapper containing one or more recipes
 export interface VideoRecipes {
   has_recipe: boolean;
+  has_more_recipes?: boolean; // True if there are additional unextracted recipes in the video
   video_id: string;
   video_url: string;
   upload_date: string;
@@ -140,7 +142,7 @@ export interface RecipeVersionInfo {
   prompt_used: string;
   model: string;
   temperature: number;
-  generation_type: 'original' | 'regenerated';
+  generation_type: 'original' | 'regenerated' | 'regenerated-2stage' | 'continuation';
 }
 
 // Versioned recipe wrapper
@@ -153,7 +155,7 @@ export interface VersionedRecipe {
 export interface RecipeVersionSummary {
   version: number;
   created_at: string;
-  generation_type: 'original' | 'regenerated';
+  generation_type: 'original' | 'regenerated' | 'regenerated-2stage' | 'continuation';
 }
 
 // API response with version info
@@ -208,4 +210,45 @@ export interface VideoMetadata {
     width?: number;
     height?: number;
   }[];
+}
+
+// Batch processing types
+export interface BatchVideoSample {
+  video_id: string;
+  title: string;
+  channel_name?: string;
+  channel_id?: string;
+}
+
+export interface BatchSampleResponse {
+  videos: BatchVideoSample[];
+}
+
+// 2-stage regeneration response
+export interface TwoStageRegenerateResponse {
+  success: boolean;
+  version: number;
+  version_info: RecipeVersionInfo;
+  recipe: VideoRecipes;
+  cleaned_transcript: CleanedTranscript;
+  error?: string;
+}
+
+// Continue extraction request
+export interface ContinueExtractionRequest {
+  maxIterations?: number; // Default: 10
+  prompt?: string;
+  model?: string;
+  temperature?: number;
+}
+
+// Continue extraction response
+export interface ContinueExtractionResponse {
+  success: boolean;
+  version: number;
+  version_info: RecipeVersionInfo;
+  recipe: VideoRecipes;
+  iterations: number; // Number of API calls made
+  recipesExtracted: number; // Total recipes in final result
+  error?: string;
 }

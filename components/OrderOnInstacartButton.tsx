@@ -21,30 +21,42 @@ export default function OrderOnInstacartButton({
     setIsLoading(true);
     setError(null);
 
+    // Open window synchronously to avoid popup blocker on mobile Safari
+    const newWindow = window.open('about:blank', '_blank');
+
     try {
-      const response = await fetch('/api/instacart/create-recipe', {
+      const response = await fetch('/api/instacart/create-shopping-list', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ recipe, videoId }),
+        body: JSON.stringify({
+          title: recipe.title,
+          ingredients: recipe.ingredients,
+          videoId,
+        }),
       });
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to create Instacart recipe page');
+        throw new Error(data.error || 'Failed to create Instacart shopping list');
       }
 
       const result = await response.json();
 
-      if (result.products_link_url) {
-        window.open(result.products_link_url, '_blank', 'noopener,noreferrer');
+      if (result.products_link_url && newWindow) {
+        newWindow.location.href = result.products_link_url;
+      } else if (!newWindow && result.products_link_url) {
+        // Fallback if window was still blocked
+        window.location.href = result.products_link_url;
       } else {
+        newWindow?.close();
         setError('Failed to generate Instacart link');
       }
     } catch (err) {
       console.error('Error ordering on Instacart:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create Instacart recipe page');
+      newWindow?.close();
+      setError(err instanceof Error ? err.message : 'Failed to create Instacart shopping list');
     } finally {
       setIsLoading(false);
     }

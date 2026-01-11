@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "recipes",
   description: "Discover and save your favorite cooking recipes from YouTube",
   other: {
-    "impact-site-verification": "9a7742ec-ac15-4d41-aaf3-a1ba15ffe7c2",
+    "impact-site-verification": "f3d052b8-8b26-4393-9c01-3d66a9230d06",
   },
 };
 

@@ -30,10 +30,10 @@ interface VideoWithChannel extends Video {
 }
 
 interface Channel {
-  name: string;
-  slug: string;
-  id: string;
-  followers: number;
+  channel: string;
+  channelSlug: string;
+  channel_id: string;
+  channel_follower_count: number;
 }
 
 interface RecipesData {
@@ -61,6 +61,22 @@ interface TypesenseDocument {
   thumbnails: string; // JSON stringified
   hasRecipe: boolean;
   priorityBoost: number;
+  // Recipe metadata for discovery
+  difficulty: string;
+  total_time_minutes: number;
+  ingredients: string[];
+  tags: string[]; // Unified tag system
+}
+
+interface TagIndex {
+  videoTags: Record<string, string[]>;
+  tagStats: Record<string, number>;
+  meta: {
+    buildTime: string;
+    totalVideos: number;
+    taggedVideos: number;
+    coveragePercent: number;
+  };
 }
 
 async function indexToTypesense() {
@@ -105,10 +121,21 @@ async function indexToTypesense() {
     console.log(`⭐ Loaded priority config for ${Object.keys(priorityConfig.channels).length} channels`);
   }
 
+  // Load tag index
+  const tagIndexPath = path.join(__dirname, '../data/tag-index.json');
+  let tagIndex: TagIndex = { videoTags: {}, tagStats: {}, meta: { buildTime: '', totalVideos: 0, taggedVideos: 0, coveragePercent: 0 } };
+
+  if (fs.existsSync(tagIndexPath)) {
+    tagIndex = JSON.parse(fs.readFileSync(tagIndexPath, 'utf-8'));
+    console.log(`🏷️  Loaded tag index for ${tagIndex.meta.taggedVideos} videos (${tagIndex.meta.coveragePercent}% coverage)`);
+  } else {
+    console.warn('⚠️  Tag index not found. Run: npx tsx scripts/build-tag-index.ts');
+  }
+
   // Create channel lookup map
   const channelMap = new Map<string, Channel>();
   recipesData.channels.forEach((channel) => {
-    channelMap.set(channel.id, channel);
+    channelMap.set(channel.channel_id, channel);
   });
 
   // Delete existing collection if it exists
@@ -139,33 +166,78 @@ async function indexToTypesense() {
       { name: 'thumbnails', type: 'string' as const }, // JSON stringified
       { name: 'hasRecipe', type: 'bool' as const, facet: true },
       { name: 'priorityBoost', type: 'int32' as const },
+      // Recipe metadata for discovery features
+      { name: 'difficulty', type: 'string' as const, facet: true },
+      { name: 'total_time_minutes', type: 'int32' as const, facet: true },
+      { name: 'ingredients', type: 'string[]' as const }, // For pantry matching
+      { name: 'tags', type: 'string[]' as const, facet: true }, // Unified tag system
     ],
   };
 
   await client.collections().create(schema);
   console.log('✅ Created collection schema');
 
+  // Extract ingredient names (just the item, normalized)
+  const extractIngredients = (recipes: any[] | undefined): string[] => {
+    if (!recipes) return [];
+    const ingredients = new Set<string>();
+    recipes.forEach((recipe) => {
+      if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
+        recipe.ingredients.forEach((ing: any) => {
+          if (ing.item) {
+            // Normalize: lowercase, trim
+            ingredients.add(ing.item.toLowerCase().trim());
+          }
+        });
+      }
+    });
+    return Array.from(ingredients);
+  };
+
+  // Get the best difficulty from recipes (prefer the first recipe's difficulty)
+  const getDifficulty = (recipes: any[] | undefined): string => {
+    if (!recipes || recipes.length === 0) return '';
+    for (const recipe of recipes) {
+      if (recipe.difficulty) return recipe.difficulty;
+    }
+    return '';
+  };
+
+  // Get total time (use the first recipe with a total_time, or compute max)
+  const getTotalTime = (recipes: any[] | undefined): number => {
+    if (!recipes || recipes.length === 0) return 0;
+    for (const recipe of recipes) {
+      if (recipe.total_time_minutes) return recipe.total_time_minutes;
+    }
+    return 0;
+  };
+
   // Prepare documents for indexing
   const documents: TypesenseDocument[] = recipesData.videos.map((video) => {
     const channel = channelMap.get(video.channel_id);
-    const channelSlug = video.channelSlug || channel?.slug || '';
+    const channelSlug = video.channelSlug || channel?.channelSlug || '';
     const priorityBoost = priorityConfig.channels[channelSlug] ? 2 : 1;
 
     return {
       id: video.id,
       title: video.title || '',
       description: video.description || '',
-      channelName: channel?.name || '',
+      channelName: channel?.channel || '',
       channelSlug,
       channel: video.channel || '',
       channel_id: video.channel_id || '',
-      channelFollowers: channel?.followers || 0,
+      channelFollowers: channel?.channel_follower_count || 0,
       duration: video.duration || 0,
       view_count: video.view_count || 0,
       upload_date: video.upload_date || '',
       thumbnails: JSON.stringify(video.thumbnails || []),
       hasRecipe: !!(video.recipes && video.recipes.length > 0),
       priorityBoost,
+      // Recipe metadata for discovery
+      difficulty: getDifficulty(video.recipes),
+      total_time_minutes: getTotalTime(video.recipes),
+      ingredients: extractIngredients(video.recipes),
+      tags: tagIndex.videoTags[video.id] || [],
     };
   });
 

@@ -18,6 +18,7 @@ export interface Ingredient {
 export interface Instruction {
   step: number;
   text: string;
+  section_id?: string; // References CleanedTranscriptSection.id
   timing_confidence?: 'high' | 'medium' | 'low' | 'none';
   timestamp_seconds?: number;
   end_time_seconds?: number;
@@ -25,6 +26,11 @@ export interface Instruction {
     temperatures?: string[];
     amounts?: string[];
     times?: string[];
+  };
+  keywords?: {
+    ingredients?: Ingredient[];
+    techniques?: string[];
+    equipment?: string[];
   };
 }
 
@@ -47,6 +53,21 @@ export interface Recipe {
   tips?: string[];
 }
 
+export interface CleanedTranscriptSection {
+  id: string;
+  startTime: number;
+  endTime: number;
+  heading?: string;
+  text: string;
+}
+
+export interface CleanedTranscript {
+  sections: CleanedTranscriptSection[];
+  generated_at: string;
+  model: string;
+  prompt_used: string;
+}
+
 export interface Video {
   id: string;
   title: string;
@@ -60,6 +81,7 @@ export interface Video {
   channelSlug: string;
   hasRecipe?: boolean;
   recipes?: Recipe[];
+  cleaned_transcript?: CleanedTranscript;
 }
 
 export interface Channel {
@@ -80,4 +102,5 @@ export interface Channel {
 export interface VideoWithChannel extends Video {
   channelName: string;
   channelFollowers: number;
+  recipeTitle?: string;
 }

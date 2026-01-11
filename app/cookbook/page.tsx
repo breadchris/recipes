@@ -1,11 +1,7 @@
-import type { Metadata } from 'next';
-import CookbookClient from './cookbook-client';
-
-export const metadata: Metadata = {
-  title: 'My Cookbook | Recipe Videos',
-  description: 'Your saved recipe videos and notes',
-};
+// HIDDEN: cookbook - This page now redirects to home
+// Original implementation preserved in cookbook-client.tsx
+import { redirect } from 'next/navigation';
 
 export default function CookbookPage() {
-  return <CookbookClient />;
+  redirect('/');
 }

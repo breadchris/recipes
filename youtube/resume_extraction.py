@@ -14,13 +14,14 @@ import time
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 CACHE_DIR = os.path.join(SCRIPT_DIR, '..', 'data', 'youtube-cache')
 
-def get_missing_videos(channel_handle: str, days_back: int = 180):
+def get_missing_videos(channel_handle: str, days_back: int = 180, all_videos: bool = False):
     """
     Get video IDs that don't have transcripts yet.
 
     Args:
         channel_handle: Channel handle (e.g., 'JKenjiLopezAlt')
         days_back: Number of days to look back (default: 180 = 6 months)
+        all_videos: If True, check all videos regardless of date
 
     Returns:
         List of (video_id, upload_date, title) tuples for missing transcripts
@@ -35,7 +36,7 @@ def get_missing_videos(channel_handle: str, days_back: int = 180):
     with gzip.open(cache_file, 'rt', encoding='utf-8') as f:
         channel_data = json.load(f)
 
-    # Calculate cutoff date
+    # Calculate cutoff date (only used if not all_videos)
     cutoff_date = datetime.now() - timedelta(days=days_back)
     cutoff_str = cutoff_date.strftime('%Y%m%d')
 
@@ -51,8 +52,8 @@ def get_missing_videos(channel_handle: str, days_back: int = 180):
         video_id = entry.get('id')
         upload_date = entry.get('upload_date', '')
 
-        # Filter by date
-        if upload_date < cutoff_str:
+        # Filter by date (skip if --all flag is set)
+        if not all_videos and upload_date < cutoff_str:
             continue
 
         # Check if transcript exists
@@ -88,6 +89,11 @@ def main():
         help='Number of days to look back (default: 180 = 6 months)'
     )
     parser.add_argument(
+        '--all',
+        action='store_true',
+        help='Check all videos regardless of upload date'
+    )
+    parser.add_argument(
         '--delay',
         type=int,
         default=10,
@@ -97,7 +103,7 @@ def main():
     args = parser.parse_args()
 
     # Get missing videos
-    missing = get_missing_videos(args.channel, args.days)
+    missing = get_missing_videos(args.channel, args.days, all_videos=args.all)
 
     if not missing:
         print('No missing videos found!', file=sys.stderr)

@@ -17,17 +17,34 @@ interface RecipesData {
 
 let cachedData: RecipesData | null = null;
 
+async function loadFromBlob(url: string): Promise<RecipesData> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch from blob: ${response.status}`);
+  }
+  const arrayBuffer = await response.arrayBuffer();
+  const compressed = Buffer.from(arrayBuffer);
+  const decompressed = gunzipSync(compressed);
+  return JSON.parse(decompressed.toString()) as RecipesData;
+}
+
+async function loadFromFile(): Promise<RecipesData> {
+  const dataPath = path.join(process.cwd(), 'data', 'recipes-data.json.gz');
+  const compressed = await fs.readFile(dataPath);
+  const decompressed = gunzipSync(compressed);
+  return JSON.parse(decompressed.toString()) as RecipesData;
+}
+
 async function loadData(): Promise<RecipesData> {
   if (cachedData) {
     return cachedData;
   }
 
-  const dataPath = path.join(process.cwd(), 'data', 'recipes-data.json.gz');
-
   try {
-    const compressed = await fs.readFile(dataPath);
-    const decompressed = gunzipSync(compressed);
-    const data = JSON.parse(decompressed.toString()) as RecipesData;
+    const blobUrl = process.env.RECIPES_DATA_URL;
+    const data = blobUrl
+      ? await loadFromBlob(blobUrl)
+      : await loadFromFile();
 
     cachedData = data;
     console.log(`Loaded ${data.metadata.totalVideos} videos from ${data.metadata.totalChannels} channels`);

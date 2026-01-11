@@ -1,0 +1,13 @@
+data/scrape/
+data/pipeline/
+data/youtube-cache/
+data/fooddata/
+app/api/admin
+app/admin
+lib/admin/
+components/admin/
+infra/
+lambda/
+pipeline/
+scripts/
+youtube/

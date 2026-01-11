@@ -27,6 +27,11 @@ export interface EquipmentLink {
  */
 export const equipmentLinks: Record<string, EquipmentLink> = {
   // Cookware (pots, pans, skillets)
+  forks: {
+    name: "Forks",
+    amazonUrl: "https://amzn.to/453tLYd",
+    category: "tools",
+  },
   skillet: {
     name: "Skillet",
     amazonUrl: "https://amzn.to/4s8Yehb",
@@ -107,21 +112,76 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
     amazonUrl: "https://amzn.to/4saGEJJ",
     category: "cookware",
   },
+  "crepe pan": {
+    name: "Crepe Pan",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  "grill pan": {
+    name: "Grill Pan",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  "cast iron griddle": {
+    name: "Cast Iron Griddle",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  comal: {
+    name: "Comal",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  donabe: {
+    name: "Donabe",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  "fondue pot": {
+    name: "Fondue Pot",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  "double boiler": {
+    name: "Double Boiler",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  "steamer basket": {
+    name: "Steamer Basket",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  "steamer pot": {
+    name: "Steamer Pot",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  saucier: {
+    name: "Saucier",
+    amazonUrl: "",
+    category: "cookware",
+  },
+  braiser: {
+    name: "Braiser",
+    amazonUrl: "",
+    category: "cookware",
+  },
 
   // Knives
   knife: {
     name: "Chef's Knife",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/3N7ObsY",
     category: "knives",
   },
   "paring knife": {
     name: "Paring Knife",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/4qOoegB",
     category: "knives",
   },
   "serrated knife": {
     name: "Serrated Knife",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/4swCQCW",
     category: "knives",
   },
   "boning knife": {
@@ -131,6 +191,31 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
   },
   cleaver: {
     name: "Cleaver",
+    amazonUrl: "",
+    category: "knives",
+  },
+  "chef's knife": {
+    name: "Chef's Knife",
+    amazonUrl: "",
+    category: "knives",
+  },
+  "bread knife": {
+    name: "Bread Knife",
+    amazonUrl: "https://amzn.to/4swCQCW",
+    category: "knives",
+  },
+  "oyster knife": {
+    name: "Oyster Knife",
+    amazonUrl: "",
+    category: "knives",
+  },
+  "slicing knife": {
+    name: "Slicing Knife",
+    amazonUrl: "",
+    category: "knives",
+  },
+  "butter knife": {
+    name: "Butter Knife",
     amazonUrl: "",
     category: "knives",
   },
@@ -203,12 +288,12 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
   },
   "fine mesh strainer": {
     name: "Fine Mesh Strainer",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/4jldS54",
     category: "tools",
   },
   colander: {
     name: "Colander",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/44QL8eH",
     category: "tools",
   },
   mandoline: {
@@ -238,7 +323,12 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
   },
   "potato masher": {
     name: "Potato Masher",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/49DkJ6I",
+    category: "tools",
+  },
+  masher: {
+    name: "masher",
+    amazonUrl: "https://amzn.to/49DkJ6I",
     category: "tools",
   },
   ricer: {
@@ -306,6 +396,156 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
     amazonUrl: "",
     category: "tools",
   },
+  "kitchen torch": {
+    name: "Kitchen Torch",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "pizza cutter": {
+    name: "Pizza Cutter",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "pastry blender": {
+    name: "Pastry Blender",
+    amazonUrl: "https://amzn.to/45E0d3s",
+    category: "tools",
+  },
+  "cookie cutter": {
+    name: "Cookie Cutters",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "dough whisk": {
+    name: "Dough Whisk",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "bread lame": {
+    name: "Bread Lame",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "dough scraper": {
+    name: "Dough Scraper",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "bowl scraper": {
+    name: "Bowl Scraper",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "pasta roller": {
+    name: "Pasta Roller",
+    amazonUrl: "",
+    category: "tools",
+  },
+  spiralizer: {
+    name: "Spiralizer",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "meat tenderizer": {
+    name: "Meat Tenderizer",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "apple corer": {
+    name: "Apple Corer",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "can opener": {
+    name: "Can Opener",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "julienne peeler": {
+    name: "Julienne Peeler",
+    amazonUrl: "",
+    category: "tools",
+  },
+  zester: {
+    name: "Zester",
+    amazonUrl: "",
+    category: "tools",
+  },
+  funnel: {
+    name: "Funnel",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "silicone spatula": {
+    name: "Silicone Spatula",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "rubber spatula": {
+    name: "Rubber Spatula",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "fish spatula": {
+    name: "Fish Spatula",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "wooden spatula": {
+    name: "Wooden Spatula",
+    amazonUrl: "",
+    category: "tools",
+  },
+  turner: {
+    name: "Turner",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "food mill": {
+    name: "Food Mill",
+    amazonUrl: "",
+    category: "tools",
+  },
+  chinois: {
+    name: "Chinois",
+    amazonUrl: "",
+    category: "tools",
+  },
+  sieve: {
+    name: "Sieve",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "cocktail shaker": {
+    name: "Cocktail Shaker",
+    amazonUrl: "",
+    category: "tools",
+  },
+  muddler: {
+    name: "Muddler",
+    amazonUrl: "",
+    category: "tools",
+  },
+  jigger: {
+    name: "Jigger",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "tortilla press": {
+    name: "Tortilla Press",
+    amazonUrl: "",
+    category: "tools",
+  },
+  tamper: {
+    name: "Espresso Tamper",
+    amazonUrl: "",
+    category: "tools",
+  },
+  "piping tips": {
+    name: "Piping Tips",
+    amazonUrl: "",
+    category: "tools",
+  },
 
   // Appliances
   oven: {
@@ -320,12 +560,12 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
   },
   blender: {
     name: "Blender",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/45E0d3s",
     category: "appliances",
   },
   "immersion blender": {
     name: "Immersion Blender",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/4ppAQtp",
     category: "appliances",
   },
   "food processor": {
@@ -405,7 +645,7 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
   },
   "sous vide": {
     name: "Sous Vide Machine",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/4q7c0zN",
     category: "appliances",
   },
   "vacuum sealer": {
@@ -420,6 +660,66 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
   },
   "bamboo steamer": {
     name: "Bamboo Steamer",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "air fryer": {
+    name: "Air Fryer",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "slow cooker": {
+    name: "Slow Cooker",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  dehydrator: {
+    name: "Dehydrator",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "ice cream maker": {
+    name: "Ice Cream Maker",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "coffee grinder": {
+    name: "Coffee Grinder",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "electric mixer": {
+    name: "Electric Mixer",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "milk frother": {
+    name: "Milk Frother",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "french press": {
+    name: "French Press",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "smoke gun": {
+    name: "Smoke Gun",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "instant pot": {
+    name: "Instant Pot",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  "sandwich press": {
+    name: "Sandwich Press",
+    amazonUrl: "",
+    category: "appliances",
+  },
+  rotisserie: {
+    name: "Rotisserie",
     amazonUrl: "",
     category: "appliances",
   },
@@ -485,6 +785,11 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
     amazonUrl: "",
     category: "bakeware",
   },
+  molds: {
+    name: "Molds",
+    amazonUrl: "https://amzn.to/4sAZaeO",
+    category: "bakeware",
+  },
   "tart mold": {
     name: "Tart Mold",
     amazonUrl: "",
@@ -495,21 +800,91 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
     amazonUrl: "",
     category: "bakeware",
   },
+  "silicone mat": {
+    name: "Silicone Baking Mat",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "proofing basket": {
+    name: "Proofing Basket",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "9x13 inch pan": {
+    name: "9x13 Inch Baking Pan",
+    amazonUrl: "https://amzn.to/3Na7yS0",
+    category: "bakeware",
+  },
+  banneton: {
+    name: "Banneton",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "pie plate": {
+    name: "Pie Plate",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "bread tin": {
+    name: "Bread Tin",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "cake tin": {
+    name: "Cake Tin",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "bundt pan": {
+    name: "Bundt Pan",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "pizza screen": {
+    name: "Pizza Screen",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "pullman loaf pan": {
+    name: "Pullman Loaf Pan",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "cupcake liners": {
+    name: "Cupcake Liners",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "pastry cutter": {
+    name: "Pastry Cutter",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "biscuit cutter": {
+    name: "Biscuit Cutter",
+    amazonUrl: "",
+    category: "bakeware",
+  },
+  "ring mold": {
+    name: "Ring Mold",
+    amazonUrl: "",
+    category: "bakeware",
+  },
 
   // Prep (cutting boards, bowls, prep containers)
   "cutting board": {
     name: "Cutting Board",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/4jldS54",
     category: "prep",
   },
   "mixing bowl": {
     name: "Mixing Bowl Set",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/4aImrow",
     category: "prep",
   },
   "parchment paper": {
     name: "Parchment Paper",
-    amazonUrl: "",
+    amazonUrl: "https://amzn.to/4pns8f9",
     category: "prep",
   },
   "plastic wrap": {
@@ -524,6 +899,41 @@ export const equipmentLinks: Record<string, EquipmentLink> = {
   },
   "paper towels": {
     name: "Paper Towels",
+    amazonUrl: "",
+    category: "prep",
+  },
+  "butcher paper": {
+    name: "Butcher Paper",
+    amazonUrl: "",
+    category: "prep",
+  },
+  "wax paper": {
+    name: "Wax Paper",
+    amazonUrl: "",
+    category: "prep",
+  },
+  "vacuum bag": {
+    name: "Vacuum Seal Bags",
+    amazonUrl: "",
+    category: "prep",
+  },
+  "freezer bag": {
+    name: "Freezer Bags",
+    amazonUrl: "",
+    category: "prep",
+  },
+  "mason jar": {
+    name: "Mason Jars",
+    amazonUrl: "",
+    category: "prep",
+  },
+  "squeeze bottle": {
+    name: "Squeeze Bottles",
+    amazonUrl: "",
+    category: "prep",
+  },
+  "spray bottle": {
+    name: "Spray Bottle",
     amazonUrl: "",
     category: "prep",
   },
@@ -698,6 +1108,154 @@ export const equipmentAliases: Record<string, string> = {
   "grill or broiler": "grill",
   "chimney starter": "grill",
   "charcoal chimney": "grill",
+
+  // Size variants - skillets
+  "10-inch skillet": "skillet",
+  "12-inch skillet": "skillet",
+  "10-inch nonstick skillet": "nonstick skillet",
+  "12-inch nonstick skillet": "nonstick skillet",
+  "10-inch non-stick skillet": "nonstick skillet",
+  "12-inch non-stick skillet": "nonstick skillet",
+  "10-inch pan": "skillet",
+  "10-inch nonstick pan": "nonstick skillet",
+  "large skillet": "skillet",
+  "small skillet": "skillet",
+  "deep pan": "skillet",
+  "heavy pan": "skillet",
+  "heavy-bottom pot": "pot",
+  "heavy-bottomed pot": "pot",
+  "stainless steel pan": "skillet",
+  "14-inch flat-bottomed carbon steel wok": "wok",
+
+  // Size variants - saucepans/pots
+  "medium pot": "pot",
+  "small pot": "pot",
+  "large saucepan": "saucepan",
+  "medium saucepan": "saucepan",
+  "small saucepan": "saucepan",
+  "2-quart saucier": "saucier",
+  "deep saucepan": "saucepan",
+  "medium-sized pot": "pot",
+  "cooking pot": "pot",
+  "heavy-bottom saucepan": "saucepan",
+
+  // Size variants - bowls
+  "medium bowl": "mixing bowl",
+  "small bowl": "mixing bowl",
+  "smaller bowl": "mixing bowl",
+  "heatproof bowl": "mixing bowl",
+  "metal bowl": "mixing bowl",
+  "glass bowl": "mixing bowl",
+
+  // Torch variants
+  "blow torch": "blowtorch",
+  torch: "blowtorch",
+
+  // Lame variants
+  lame: "bread lame",
+  "baker's lame": "bread lame",
+  "razor blade": "bread lame",
+
+  // Banneton/proofing variants
+  "banneton basket": "banneton",
+
+  // Cookie cutter variants
+  "cookie cutters": "cookie cutter",
+
+  // Silicone mat variants
+  silpat: "silicone mat",
+  "silicone baking mat": "silicone mat",
+
+  // Cast iron variants
+  "cast iron": "cast iron skillet",
+  "enameled dutch oven": "dutch oven",
+  "enameled Dutch oven": "dutch oven",
+  "Dutch oven": "dutch oven",
+
+  // Crepe pan variants
+  "crêpe pan": "crepe pan",
+  "crepe maker": "crepe pan",
+
+  // Chef's knife variants
+  "chef knife": "chef's knife",
+  "chefs knife": "chef's knife",
+  "sharp knife": "chef's knife",
+
+  // Ice cream maker variants
+  "ice cream machine": "ice cream maker",
+
+  // Waffle maker variants
+  "waffle maker": "waffle iron",
+
+  // Bag variants
+  "ziploc bag": "freezer bag",
+  "ziplock bag": "freezer bag",
+  "zipper lock bag": "freezer bag",
+  "zip-top bag": "freezer bag",
+  "zip top bag": "freezer bag",
+  "Ziploc bag": "freezer bag",
+  "resealable bag": "freezer bag",
+  "gallon zipper lock bag": "freezer bag",
+  "freeze lock bag": "freezer bag",
+  "brining bags": "freezer bag",
+
+  // Sous vide variants
+  "sous vide machine": "sous vide",
+  "immersion circulator": "sous vide",
+  "sous-vide bag": "vacuum bag",
+  "sous vide bag": "vacuum bag",
+  "vacuum seal bag": "vacuum bag",
+
+  // Twine variants
+  "cooking twine": "kitchen twine",
+  "butcher twine": "kitchen twine",
+  "kitchen string": "kitchen twine",
+  "cotton string": "kitchen twine",
+
+  // Instant pot variants
+  "Instant Pot": "instant pot",
+  "Instant Pot Duo Crisp": "instant pot",
+
+  // Air fryer variants
+  "air fryer rack": "air fryer",
+  "air fryer racks": "air fryer",
+  "air fryer tray": "air fryer",
+
+  // Slow cooker variants
+  "crock pot": "slow cooker",
+
+  // Griddle variants
+  "griddle pan": "griddle",
+  "griddle or skillet": "griddle",
+  "plancha or skillet": "griddle",
+
+  // Steamer variants
+  steamer: "steamer basket",
+
+  // Misc tool aliases
+  "bench scraper": "dough scraper",
+  "kitchen scraper": "dough scraper",
+  "instant read thermometer": "thermometer",
+  "candy thermometer": "thermometer",
+  shears: "kitchen shears",
+  "seafood scissors": "kitchen shears",
+  "shrimp shears": "kitchen shears",
+  "wire skimmer": "skimmer",
+  "mesh spider": "spider strainer",
+  spider: "spider strainer",
+  "lemon juicer": "citrus juicer",
+  juicer: "citrus juicer",
+  "cooling rack": "wire rack",
+  "cooling racks": "wire rack",
+  "resting rack": "wire rack",
+  "mesh rack": "wire rack",
+
+  // Baking pan variants
+  "9x13 pan": "9x13 inch pan",
+  "9x13 baking dish": "9x13 inch pan",
+  "9 by 13 inch pan": "9x13 inch pan",
+  "13 by 9 dish": "9x13 inch pan",
+  "13x9 inch pan": "9x13 inch pan",
 };
 
 /**

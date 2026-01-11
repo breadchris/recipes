@@ -5,6 +5,10 @@ https://www.youtube.com/@epicurious
 https://www.youtube.com/@AmericasTestKitchen
 https://www.youtube.com/@JoshuaWeissman
 https://www.youtube.com/@ChefJeanPierre
+https://www.youtube.com/@CSaffitz
+https://www.youtube.com/@aragusea
+https://www.youtube.com/@chefsteps
+https://www.youtube.com/@nytcooking
 
 - #cookwherever
 	- epicurious

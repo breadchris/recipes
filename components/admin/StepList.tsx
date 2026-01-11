@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { formatTime } from '@/lib/admin/utils';
-import type { AdminInstruction, KeywordType } from '@/lib/types/admin';
+import type { AdminInstruction, AdminIngredient, KeywordType, CleanedTranscript } from '@/lib/types/admin';
 import { Pencil, Check, Trash2, CheckCircle, MinusCircle, AlertCircle, XCircle } from 'lucide-react';
 
 const KEYWORD_CLASSES: Record<KeywordType, string> = {
@@ -58,6 +58,7 @@ interface StepListProps {
   onStepClick: (step: number, startTime: number) => void;
   filterTypes: KeywordType[];
   onToggleFilter: (type: KeywordType) => void;
+  cleanedTranscript?: CleanedTranscript | null; // For looking up section timestamps
   editingStep?: number | null;
   onEditStep?: (step: number | null) => void;
   onNotesChange?: (step: number, notes: string) => void;
@@ -77,6 +78,7 @@ export function StepList({
   onStepClick,
   filterTypes,
   onToggleFilter,
+  cleanedTranscript,
   editingStep,
   onEditStep,
   onNotesChange,
@@ -87,6 +89,11 @@ export function StepList({
   deletedSteps,
   pendingBoundaries,
 }: StepListProps) {
+  // Helper to get timestamps from section if available
+  const getSectionTimestamps = (sectionId?: string) => {
+    if (!sectionId || !cleanedTranscript) return null;
+    return cleanedTranscript.sections.find((s) => s.id === sectionId);
+  };
   const currentStepByTime = instructions.find(
     (inst) =>
       inst.timestamp_seconds !== undefined &&
@@ -115,13 +122,23 @@ export function StepList({
           const isCurrentByTime = currentStepByTime === instruction.step;
           const isEditing = editingStep === instruction.step;
           const pendingBoundary = pendingBoundaries?.get(instruction.step);
-          const startTime = pendingBoundary?.timestamp_seconds ?? instruction.timestamp_seconds ?? 0;
-          const endTime = pendingBoundary?.end_time_seconds ?? instruction.end_time_seconds ?? 0;
+
+          // Get section timestamps if available (prioritized over step-level timestamps)
+          const section = getSectionTimestamps(instruction.section_id);
+          const sectionStartTime = section?.startTime;
+          const sectionEndTime = section?.endTime;
+
+          // Priority: pending boundary > section timestamps > step-level timestamps
+          const startTime = pendingBoundary?.timestamp_seconds ?? sectionStartTime ?? instruction.timestamp_seconds ?? 0;
+          const endTime = pendingBoundary?.end_time_seconds ?? sectionEndTime ?? instruction.end_time_seconds ?? 0;
           const duration = endTime - startTime;
           const hasPendingBoundary = !!pendingBoundary;
+          const hasSection = !!section;
           const hasTimestamp = (pendingBoundary?.timestamp_seconds !== undefined && pendingBoundary.timestamp_seconds > 0) ||
+            (sectionStartTime !== undefined && sectionStartTime >= 0) ||
             (instruction.timestamp_seconds !== undefined && instruction.timestamp_seconds > 0) ||
             (pendingBoundary?.end_time_seconds !== undefined && pendingBoundary.end_time_seconds > 0) ||
+            (sectionEndTime !== undefined && sectionEndTime > 0) ||
             (instruction.end_time_seconds !== undefined && instruction.end_time_seconds > 0);
           const refCount = instruction.video_references?.length || 0;
           const currentNotes = pendingNotes?.get(instruction.step) ?? instruction.notes ?? '';
@@ -208,17 +225,44 @@ export function StepList({
                 {refCount > 0 && <span className="text-zinc-600">• {refCount} refs</span>}
               </div>
 
+              {/* Section badge */}
+              {hasSection && section && (
+                <div className="ml-8 mb-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onStepClick(instruction.step, section.startTime);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs rounded border bg-cyan-900/30 text-cyan-400 border-cyan-700/50 hover:bg-cyan-900/50 hover:border-cyan-600 transition-colors"
+                    title={`${section.heading || instruction.section_id} - Click to seek to ${formatTime(section.startTime)}`}
+                  >
+                    <span>{section.heading || instruction.section_id}</span>
+                    <span className="text-cyan-600">{formatTime(section.startTime)}</span>
+                  </button>
+                </div>
+              )}
+
               {instruction.keywords && (
                 <div className="ml-8 flex flex-wrap gap-1">
                   {filterTypes.includes('ingredient') &&
                     instruction.keywords.ingredients?.map((ingredient, idx) => {
-                      // Find matching amount that contains this ingredient
-                      const matchingAmount = instruction.measurements?.amounts?.find(
-                        (amt) => amt.toLowerCase().includes(ingredient.toLowerCase())
-                      );
+                      // Handle both new structured format (AdminIngredient) and legacy string format
+                      let displayText: string;
+                      if (typeof ingredient === 'object' && ingredient !== null) {
+                        // New format: { item, quantity, unit, notes }
+                        const ing = ingredient as AdminIngredient;
+                        displayText = [ing.quantity, ing.unit, ing.item].filter(Boolean).join(' ').trim();
+                      } else {
+                        // Legacy format: plain string - try to find matching amount
+                        const ingredientStr = ingredient as unknown as string;
+                        const matchingAmount = instruction.measurements?.amounts?.find(
+                          (amt) => amt.toLowerCase().includes(ingredientStr.toLowerCase())
+                        );
+                        displayText = matchingAmount || ingredientStr;
+                      }
                       return (
                         <span key={`ing-${idx}`} className={`px-1.5 py-0.5 text-xs rounded border ${KEYWORD_CLASSES.ingredient}`}>
-                          {matchingAmount || ingredient}
+                          {displayText}
                         </span>
                       );
                     })}
