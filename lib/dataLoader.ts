@@ -1,77 +1,139 @@
-import { promises as fs } from 'fs';
-import { gunzipSync } from 'zlib';
-import path from 'path';
-import type { Channel, VideoWithChannel } from './types';
+/**
+ * Data loader that fetches recipe data from Supabase and Typesense.
+ * No local JSON files are used at runtime.
+ */
 
-interface RecipesData {
-  channels: Channel[];
-  videos: VideoWithChannel[];
-  channelsBySlug: Record<string, Channel>;
-  videosByID: Record<string, VideoWithChannel>;
-  metadata: {
-    totalChannels: number;
-    totalVideos: number;
-    generatedAt: string;
-  };
+import type { Playlist, PlaylistWithVideos, VideoWithChannel } from './types';
+import { typesenseClient, PLAYLIST_COLLECTION_NAME } from './typesense';
+
+// Typesense document type for playlists
+interface TypesensePlaylistDocument {
+  id: string;
+  title: string;
+  description: string;
+  channelName: string;
+  channelSlug: string;
+  channel_id: string;
+  url: string;
+  video_count: number;
+  video_ids: string[];
+  thumbnails: string;
 }
 
-let cachedData: RecipesData | null = null;
+export {
+  getAllVideos,
+  getVideoById,
+  getVideosByIds,
+  getChannelBySlug,
+  getAllChannels,
+} from './supabaseDataLoader';
 
-async function loadFromBlob(url: string): Promise<RecipesData> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch from blob: ${response.status}`);
-  }
-  const arrayBuffer = await response.arrayBuffer();
-  const compressed = Buffer.from(arrayBuffer);
-  const decompressed = gunzipSync(compressed);
-  return JSON.parse(decompressed.toString()) as RecipesData;
-}
+import { getVideosByIds } from './supabaseDataLoader';
 
-async function loadFromFile(): Promise<RecipesData> {
-  const dataPath = path.join(process.cwd(), 'data', 'recipes-data.json.gz');
-  const compressed = await fs.readFile(dataPath);
-  const decompressed = gunzipSync(compressed);
-  return JSON.parse(decompressed.toString()) as RecipesData;
-}
+// Playlist cache for performance
+let cachedPlaylists: Playlist[] | null = null;
 
-async function loadData(): Promise<RecipesData> {
-  if (cachedData) {
-    return cachedData;
+/**
+ * Fetch all playlists from Typesense
+ */
+export async function getAllPlaylists(): Promise<Playlist[]> {
+  if (cachedPlaylists) {
+    return cachedPlaylists;
   }
 
   try {
-    const blobUrl = process.env.RECIPES_DATA_URL;
-    const data = blobUrl
-      ? await loadFromBlob(blobUrl)
-      : await loadFromFile();
+    const searchResult = await typesenseClient
+      .collections(PLAYLIST_COLLECTION_NAME)
+      .documents()
+      .search({
+        q: '*',
+        query_by: 'title',
+        per_page: 250,
+        sort_by: 'video_count:desc',
+      });
 
-    cachedData = data;
-    console.log(`Loaded ${data.metadata.totalVideos} videos from ${data.metadata.totalChannels} channels`);
+    const playlists: Playlist[] = (searchResult.hits || []).map((hit: any) => {
+      const doc = hit.document;
+      return {
+        id: doc.id,
+        title: doc.title,
+        description: doc.description || '',
+        channel_id: doc.channel_id,
+        channelName: doc.channelName,
+        channelSlug: doc.channelSlug,
+        url: doc.url,
+        video_count: doc.video_count,
+        video_ids: doc.video_ids || [],
+        thumbnails: JSON.parse(doc.thumbnails || '[]'),
+      };
+    });
 
-    return data;
+    cachedPlaylists = playlists;
+    return playlists;
   } catch (error) {
-    console.error('Failed to load recipes data:', error);
-    throw new Error('Could not load recipe data');
+    console.error('Error fetching playlists from Typesense:', error);
+    return [];
   }
 }
 
-export async function getAllVideos(): Promise<VideoWithChannel[]> {
-  const data = await loadData();
-  return data.videos;
+/**
+ * Get a playlist by ID from Typesense
+ */
+export async function getPlaylistById(playlistId: string): Promise<Playlist | null> {
+  try {
+    const result = await typesenseClient
+      .collections(PLAYLIST_COLLECTION_NAME)
+      .documents(playlistId)
+      .retrieve();
+
+    const doc = result as unknown as TypesensePlaylistDocument;
+
+    return {
+      id: doc.id,
+      title: doc.title,
+      description: doc.description || '',
+      channel_id: doc.channel_id,
+      channelName: doc.channelName,
+      channelSlug: doc.channelSlug,
+      url: doc.url,
+      video_count: doc.video_count,
+      video_ids: doc.video_ids || [],
+      thumbnails: JSON.parse(doc.thumbnails || '[]'),
+    };
+  } catch (error: any) {
+    if (error.httpStatus === 404) {
+      return null;
+    }
+    console.error('Error fetching playlist from Typesense:', error);
+    return null;
+  }
 }
 
-export async function getVideoById(videoId: string): Promise<VideoWithChannel | null> {
-  const data = await loadData();
-  return data.videosByID[videoId] || null;
-}
+/**
+ * Get a playlist by ID with all its videos loaded
+ */
+export async function getPlaylistWithVideos(
+  playlistId: string
+): Promise<PlaylistWithVideos | null> {
+  const playlist = await getPlaylistById(playlistId);
+  if (!playlist) {
+    return null;
+  }
 
-export async function getChannelBySlug(slug: string): Promise<Channel | null> {
-  const data = await loadData();
-  return data.channelsBySlug[slug] || null;
-}
+  // Bulk load all videos
+  const videoMap = await getVideosByIds(playlist.video_ids);
 
-export async function getAllChannels(): Promise<Channel[]> {
-  const data = await loadData();
-  return data.channels;
+  // Preserve order from playlist
+  const videos: VideoWithChannel[] = [];
+  for (const videoId of playlist.video_ids) {
+    const video = videoMap.get(videoId);
+    if (video) {
+      videos.push(video);
+    }
+  }
+
+  return {
+    ...playlist,
+    videos,
+  };
 }

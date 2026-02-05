@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       generated_id: generatedId,
       recipe,
       created_at: new Date().toISOString(),
-      model: 'gpt-4o',
+      model: 'gpt-4.1-nano',
       prompt,
     };
 
@@ -89,30 +89,24 @@ export async function POST(request: Request) {
 }
 
 /**
- * GET - List all saved generated recipes
+ * GET - List saved generated recipes
+ * Query params:
+ *   - limit: number (default 10) - max recipes to return
  */
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
+
     const supabase = createServerSupabaseClient();
 
-    // Get group ID
-    const { data: group, error: groupError } = await supabase
-      .from('groups')
-      .select('id')
-      .eq('name', GENERATED_RECIPES_GROUP)
-      .single();
-
-    if (groupError || !group) {
-      return NextResponse.json({ recipes: [] });
-    }
-
-    // Get all generated recipes
+    // Get all generated recipes by type (handles multiple groups with same name)
     const { data: recipes, error } = await supabase
       .from('content')
       .select('*')
-      .eq('group_id', group.id)
       .eq('type', 'generated-recipe')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
     if (error) {
       console.error('Error fetching recipes:', error);

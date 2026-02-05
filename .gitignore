@@ -48,7 +48,6 @@ data/*
 !data/tag-taxonomy.json
 !data/recipe-type-groups.json
 !data/priority-channels.json
-!data/search-index.json
 
 # youtube extraction pipeline
 youtube/venv/

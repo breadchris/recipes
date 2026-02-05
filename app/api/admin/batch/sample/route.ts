@@ -3,7 +3,7 @@ import {
   getAllVideoIds,
   hasTranscript,
   loadVideoMetadata,
-} from '@/lib/admin/data/file-io';
+} from '@/lib/admin/data/supabase-io';
 import type { BatchSampleResponse, BatchVideoSample } from '@/lib/types/admin';
 
 /**
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Filter to videos with transcripts
     const videosWithTranscripts: string[] = [];
     for (const videoId of allVideoIds) {
-      if (hasTranscript(videoId)) {
+      if (await hasTranscript(videoId)) {
         videosWithTranscripts.push(videoId);
       }
     }

@@ -25,8 +25,6 @@ import { ExternalLink, Play } from 'lucide-react';
 
 interface RecipeViewerProps {
   video: VideoWithChannel;
-  previousVideo: VideoWithChannel | null;
-  nextVideo: VideoWithChannel | null;
 }
 
 function formatTime(minutes: number): string {
@@ -39,6 +37,66 @@ function formatTime(minutes: number): string {
     return `${hours} hr`;
   }
   return `${hours} hr ${mins} min`;
+}
+
+interface VideoTimestamp {
+  time: string;
+  seconds: number;
+  label: string;
+}
+
+function parseTimestampsFromDescription(description: string): VideoTimestamp[] {
+  const timestamps: VideoTimestamp[] = [];
+  // Match patterns like "00:00 - Intro" or "1:23:45 - Something"
+  // Also handles formats without dash: "00:00 Intro"
+  const regex = /^(\d{1,2}:\d{2}(?::\d{2})?)\s*[-–—]?\s*(.+)$/gm;
+  let match;
+
+  while ((match = regex.exec(description)) !== null) {
+    const time = match[1];
+    const label = match[2].trim();
+
+    // Parse time to seconds
+    const parts = time.split(':').map(Number);
+    let seconds = 0;
+    if (parts.length === 3) {
+      // HH:MM:SS
+      seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    } else if (parts.length === 2) {
+      // MM:SS
+      seconds = parts[0] * 60 + parts[1];
+    }
+
+    timestamps.push({ time, seconds, label });
+  }
+
+  return timestamps;
+}
+
+interface VideoTimestampsProps {
+  description: string;
+  onSeek: (seconds: number) => void;
+}
+
+function VideoTimestamps({ description, onSeek }: VideoTimestampsProps) {
+  const timestamps = useMemo(() => parseTimestampsFromDescription(description), [description]);
+
+  if (timestamps.length === 0) return null;
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {timestamps.map((ts, index) => (
+        <button
+          key={index}
+          onClick={() => onSeek(ts.seconds)}
+          className="inline-flex items-center gap-1.5 px-2 py-1 text-xs rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
+        >
+          <span className="font-mono text-zinc-500 dark:text-zinc-500">{ts.time}</span>
+          <span>{ts.label}</span>
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function LayoutToggle({ layout, onToggle }: { layout: LayoutMode; onToggle: () => void }) {
@@ -519,7 +577,7 @@ function RecipeDisplay({ recipe, videoId, recipeIndex = 0, onActivateAndSeek, cl
   );
 }
 
-export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerProps) {
+export function RecipeViewer({ video }: RecipeViewerProps) {
   const router = useRouter();
   const playerRef = useRef<VideoPlayerHandle>(null);
   // HIDDEN: cookbook - const isSaved = useCookbookStore((state) => state.isSaved(video.id));
@@ -656,33 +714,6 @@ export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerPr
     </div>
   );
 
-  const navigation = (
-    <div className="flex flex-col sm:flex-row gap-4">
-      {previousVideo && (
-        <Link
-          href={`/recipe/${previousVideo.id}`}
-          className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-        >
-          <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Previous</div>
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50 line-clamp-2">
-            {previousVideo.title}
-          </div>
-        </Link>
-      )}
-      {nextVideo && (
-        <Link
-          href={`/recipe/${nextVideo.id}`}
-          className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors"
-        >
-          <div className="text-xs text-zinc-600 dark:text-zinc-400 mb-1">Next</div>
-          <div className="text-sm font-medium text-zinc-900 dark:text-zinc-50 line-clamp-2">
-            {nextVideo.title}
-          </div>
-        </Link>
-      )}
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-white dark:bg-black">
       <RecipeTimer />
@@ -711,6 +742,10 @@ export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerPr
             {/* Video Column - Sticky */}
             <div className="lg:sticky lg:top-8 lg:self-start">
               <VideoPlayer ref={playerRef} videoId={video.id} />
+              <VideoTimestamps
+                description={video.description}
+                onSeek={(seconds) => playerRef.current?.activateAndSeek(seconds)}
+              />
               <div className="mt-4">
                 <h1 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-3 line-clamp-2">
                   {video.title}
@@ -754,13 +789,15 @@ export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerPr
               <p className="text-xs text-zinc-500 dark:text-zinc-500 mb-6">
                 This page contains affiliate links to Amazon and Instacart. We may earn a small commission on qualifying purchases at no extra cost to you.
               </p>
-
-              {navigation}
             </div>
           </div>
         ) : (
           <>
             <VideoPlayer ref={playerRef} videoId={video.id} />
+            <VideoTimestamps
+              description={video.description}
+              onSeek={(seconds) => playerRef.current?.activateAndSeek(seconds)}
+            />
 
             <div className="mt-6">
               <h1 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-50 mb-4 line-clamp-2">
@@ -802,8 +839,6 @@ export function RecipeViewer({ video, previousVideo, nextVideo }: RecipeViewerPr
               <p className="text-xs text-zinc-500 dark:text-zinc-500 mb-6">
                 This page contains affiliate links to Amazon and Instacart. We may earn a small commission on qualifying purchases at no extra cost to you.
               </p>
-
-              {navigation}
             </div>
           </>
         )}

@@ -29,12 +29,6 @@ export default function AdminLayout({
                 Admin
               </Link>
               <Link
-                href="/admin/generate"
-                className="text-sm text-zinc-400 hover:text-violet-400"
-              >
-                Generate
-              </Link>
-              <Link
                 href="/admin/batch"
                 className="text-sm text-zinc-400 hover:text-violet-400"
               >

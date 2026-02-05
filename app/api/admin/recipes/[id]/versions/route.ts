@@ -5,8 +5,8 @@ import {
   isLegacyFormat,
   migrateFromLegacy,
   setCurrentVersion,
-} from '@/lib/admin/data/recipe-versions';
-import { recipeExists } from '@/lib/admin/data/file-io';
+  recipeExists,
+} from '@/lib/admin/data/supabase-io';
 
 /**
  * GET /api/admin/recipes/[id]/versions
@@ -19,7 +19,7 @@ export async function GET(
   try {
     const { id: videoId } = await params;
 
-    if (!recipeExists(videoId)) {
+    if (!(await recipeExists(videoId))) {
       return NextResponse.json(
         { error: 'Recipe not found' },
         { status: 404 }
@@ -60,7 +60,7 @@ export async function PUT(
     const body = await request.json();
     const { version } = body as { version: number };
 
-    if (!recipeExists(videoId)) {
+    if (!(await recipeExists(videoId))) {
       return NextResponse.json(
         { error: 'Recipe not found' },
         { status: 404 }

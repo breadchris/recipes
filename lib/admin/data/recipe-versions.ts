@@ -98,7 +98,7 @@ export async function migrateFromLegacy(videoId: string): Promise<void> {
     version: 1,
     created_at: createdAt,
     prompt_used: DEFAULT_RECIPE_PROMPT,
-    model: 'gpt-4o',
+    model: 'gpt-4.1-nano',
     temperature: 0.3,
     generation_type: 'original',
   };

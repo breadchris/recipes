@@ -39,6 +39,16 @@ interface VideoFile {
 }
 
 interface CachedVideoData {
+  // Flat structure (newer format)
+  id?: string;
+  fulltitle?: string;
+  title?: string;
+  description?: string;
+  webpage_url?: string;
+  upload_date?: string;
+  duration?: number;
+  channel?: string;
+  // Nested structure (older format)
   metadata?: {
     id: string;
     fulltitle?: string;
@@ -53,6 +63,14 @@ interface CachedVideoData {
     plainText?: string;
     segments?: Array<{ startTime: number; endTime: number; text: string }>;
   };
+}
+
+/**
+ * Check if a separate VTT file exists for a video
+ */
+function hasVttFile(videoId: string): boolean {
+  const vttPath = path.join(CACHE_DIR, `${videoId}.vtt.gz`);
+  return fs.existsSync(vttPath);
 }
 
 /**
@@ -122,13 +140,19 @@ function getVideoFiles(): VideoFile[] {
       const compressed = fs.readFileSync(filePath);
       const data: CachedVideoData = JSON.parse(gunzipSync(compressed).toString('utf-8'));
 
-      // Check if it has a transcript
-      if (data.transcript?.plainText || data.transcript?.segments) {
+      // Check if it has a transcript (embedded or separate VTT file)
+      const hasEmbeddedTranscript = data.transcript?.plainText || data.transcript?.segments;
+      const hasSeparateVtt = hasVttFile(videoId);
+
+      if (hasEmbeddedTranscript || hasSeparateVtt) {
+        // Handle both flat and nested data structures
+        const channelName = data.channel || data.metadata?.channel;
+        const title = data.fulltitle || data.title || data.metadata?.fulltitle || data.metadata?.title;
         videoFiles.push({
           videoId,
           filePath,
-          channelName: data.metadata?.channel,
-          title: data.metadata?.fulltitle || data.metadata?.title,
+          channelName,
+          title,
         });
       }
     } catch {
@@ -328,14 +352,14 @@ async function main() {
       continue;
     }
 
-    // Build metadata for AI
+    // Build metadata for AI (handle both flat and nested structures)
     const metadata: VideoMetadata = {
       id: video.videoId,
-      fulltitle: data.metadata?.fulltitle || data.metadata?.title || 'Unknown',
-      description: data.metadata?.description || '',
-      webpage_url: data.metadata?.webpage_url || `https://www.youtube.com/watch?v=${video.videoId}`,
-      upload_date: data.metadata?.upload_date || '',
-      duration: data.metadata?.duration || 0,
+      fulltitle: data.fulltitle || data.title || data.metadata?.fulltitle || data.metadata?.title || 'Unknown',
+      description: data.description || data.metadata?.description || '',
+      webpage_url: data.webpage_url || data.metadata?.webpage_url || `https://www.youtube.com/watch?v=${video.videoId}`,
+      upload_date: data.upload_date || data.metadata?.upload_date || '',
+      duration: data.duration || data.metadata?.duration || 0,
     };
 
     try {

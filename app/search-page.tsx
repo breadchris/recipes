@@ -8,8 +8,9 @@ import { VideoGrid } from '@/components/VideoGrid';
 import { PantryModeInput } from '@/components/PantryModeInput';
 import { VideoSearchInput } from '@/components/VideoSearchInput';
 import { TagBrowser } from '@/components/TagBrowser';
+import { RecipeGenerator } from '@/app/generate/page';
 
-type SearchMode = 'tags' | 'pantry' | 'video';
+type SearchMode = 'tags' | 'pantry' | 'video' | 'generate';
 
 interface PaginationState {
   hasMore: boolean;
@@ -64,12 +65,15 @@ export function SearchPage() {
   }, []);
 
   // Determine which results to show based on mode
-  const currentResults = searchMode === 'tags'
+  // Generate mode manages its own output, so no video results
+  const currentVideoResults = searchMode === 'tags'
     ? tagResults
     : searchMode === 'pantry'
       ? pantryResults
-      : videoResults;
-  const hasResults = currentResults.length > 0;
+      : searchMode === 'generate'
+        ? []
+        : videoResults;
+  const hasResults = currentVideoResults.length > 0;
 
   return (
     <div className="min-h-screen bg-white dark:bg-black flex flex-col">
@@ -95,18 +99,22 @@ export function SearchPage() {
                 ? 'Browse by Category'
                 : searchMode === 'pantry'
                   ? 'Use What I Have'
-                  : 'Search Videos'}
+                  : searchMode === 'generate'
+                    ? 'Create with AI'
+                    : 'Search Videos'}
             </h1>
             <p className="text-sm text-zinc-600 dark:text-zinc-400 text-center mb-2">
               {searchMode === 'tags'
                 ? 'Find recipes by cuisine, protein, technique, and more'
                 : searchMode === 'pantry'
                   ? 'Add ingredients you have and find matching recipes'
-                  : 'Search for recipes by name, dish, or technique'}
+                  : searchMode === 'generate'
+                    ? 'Describe what you want to make and get a complete recipe'
+                    : 'Search for recipes by name, dish, or technique'}
             </p>
 
             {/* Mode switcher - subtle text links */}
-            <div className="text-center mb-6 flex justify-center gap-3">
+            <div className="text-center mb-6 flex justify-center gap-3 flex-wrap">
               {searchMode !== 'tags' && (
                 <button
                   onClick={() => setSearchMode('tags')}
@@ -131,6 +139,14 @@ export function SearchPage() {
                   search by video title
                 </button>
               )}
+              {searchMode !== 'generate' && (
+                <button
+                  onClick={() => setSearchMode('generate')}
+                  className="text-xs text-zinc-500 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors underline underline-offset-2"
+                >
+                  is mayonnaise a recipe...
+                </button>
+              )}
             </div>
 
             {/* Conditional input based on mode */}
@@ -138,6 +154,8 @@ export function SearchPage() {
               <TagBrowser onResults={handleTagResults} />
             ) : searchMode === 'pantry' ? (
               <PantryModeInput onResults={handlePantryResults} />
+            ) : searchMode === 'generate' ? (
+              <RecipeGenerator embedded />
             ) : (
               <VideoSearchInput
                 onResults={handleVideoResults}
@@ -159,7 +177,7 @@ export function SearchPage() {
       {hasResults && (
         <div className="w-full max-w-7xl mx-auto px-4 pb-12">
           <VideoGrid
-            videos={currentResults}
+            videos={currentVideoResults}
             showMatchBadge={searchMode === 'pantry'}
             userIngredients={searchMode === 'pantry' ? pantryIngredients : undefined}
             useRecipeTitle={searchMode !== 'video'}

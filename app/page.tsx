@@ -1,10 +1,13 @@
-import { Suspense } from 'react';
-import { SearchPage } from './search-page';
+'use client';
+
+import { RecipeGenerator } from './generate/page';
 
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-white dark:bg-black" />}>
-      <SearchPage />
-    </Suspense>
+    <div className="min-h-screen bg-white dark:bg-black flex flex-col items-center justify-center">
+      <div className="w-full max-w-2xl px-4">
+        <RecipeGenerator embedded rotatingPlaceholders />
+      </div>
+    </div>
   );
 }

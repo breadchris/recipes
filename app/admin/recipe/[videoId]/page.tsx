@@ -7,8 +7,9 @@ import {
   loadCurrentVersion,
   getAvailableVersionNumbers,
   normalizeRecipe,
-} from '@/lib/admin/data/recipe-versions';
-import { recipeExists, loadVideoMetadata } from '@/lib/admin/data/file-io';
+  recipeExists,
+  loadVideoMetadata,
+} from '@/lib/admin/data/supabase-io';
 
 interface PageProps {
   params: Promise<{ videoId: string }>;
@@ -24,7 +25,7 @@ export default async function AdminRecipePage({ params }: PageProps) {
   }
 
   // Check if recipe exists - show generator if not
-  if (!recipeExists(videoId)) {
+  if (!(await recipeExists(videoId))) {
     return (
       <AdminRecipeGenerator
         videoId={videoId}

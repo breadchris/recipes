@@ -11,6 +11,7 @@ export const ingredientSchema = z.object({
   quantity: z.string().describe('The amount (e.g., "2", "1/2")'),
   unit: z.string().describe('The unit of measurement (e.g., "cups", "tablespoons", or empty string)'),
   notes: z.string().nullable().describe('Optional preparation notes, or null if none'),
+  category: z.string().nullable().describe('Grocery store section (e.g., "Produce", "Meat & Seafood", "Dairy & Eggs", "Pantry", "Spices & Seasonings"), or null'),
 });
 
 /**

@@ -39,6 +39,16 @@ interface VideoFile {
 }
 
 interface CachedVideoData {
+  // Flat structure (newer format)
+  id?: string;
+  fulltitle?: string;
+  title?: string;
+  description?: string;
+  webpage_url?: string;
+  upload_date?: string;
+  duration?: number;
+  channel?: string;
+  // Nested structure (older format)
   metadata?: {
     id: string;
     fulltitle?: string;
@@ -102,6 +112,14 @@ Examples:
 }
 
 /**
+ * Check if a separate VTT file exists for a video
+ */
+function hasVttFile(videoId: string): boolean {
+  const vttPath = path.join(CACHE_DIR, `${videoId}.vtt.gz`);
+  return fs.existsSync(vttPath);
+}
+
+/**
  * Get list of video files with transcripts from cache directory
  */
 function getVideoFiles(): VideoFile[] {
@@ -127,14 +145,19 @@ function getVideoFiles(): VideoFile[] {
       const compressed = fs.readFileSync(filePath);
       const data: CachedVideoData = JSON.parse(gunzipSync(compressed).toString('utf-8'));
 
-      // Check if it has a transcript
-      if (data.transcript?.plainText || data.transcript?.segments) {
-        const title = data.metadata?.fulltitle || data.metadata?.title || 'Unknown';
+      // Check if it has a transcript (embedded or separate VTT file)
+      const hasEmbeddedTranscript = data.transcript?.plainText || data.transcript?.segments;
+      const hasSeparateVtt = hasVttFile(videoId);
+
+      if (hasEmbeddedTranscript || hasSeparateVtt) {
+        // Handle both flat and nested data structures
+        const title = data.fulltitle || data.title || data.metadata?.fulltitle || data.metadata?.title || 'Unknown';
+        const channelName = data.channel || data.metadata?.channel;
         videoFiles.push({
           videoId,
           filePath,
           title,
-          channelName: data.metadata?.channel,
+          channelName,
         });
       }
     } catch {
@@ -389,7 +412,7 @@ async function main() {
 
     try {
       const cleanedTranscript = await generateCleanTranscript(transcript, {
-        description: data.metadata?.description,
+        description: data.description || data.metadata?.description,
       });
 
       if (!cleanedTranscript) {
@@ -399,7 +422,12 @@ async function main() {
         continue;
       }
 
-      saveCleanedTranscript(video.videoId, cleanedTranscript, data.metadata);
+      // Normalize metadata from flat or nested structure
+      const normalizedMetadata = {
+        webpage_url: data.webpage_url || data.metadata?.webpage_url,
+        upload_date: data.upload_date || data.metadata?.upload_date,
+      };
+      saveCleanedTranscript(video.videoId, cleanedTranscript, normalizedMetadata);
       console.log(`  Success: ${cleanedTranscript.sections.length} sections`);
       success++;
     } catch (error) {

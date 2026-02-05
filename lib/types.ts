@@ -104,3 +104,20 @@ export interface VideoWithChannel extends Video {
   channelFollowers: number;
   recipeTitle?: string;
 }
+
+export interface Playlist {
+  id: string;
+  title: string;
+  description: string;
+  channel_id: string;
+  channelName: string;
+  channelSlug: string;
+  url: string;
+  video_count: number;
+  video_ids: string[];
+  thumbnails: Thumbnail[];
+}
+
+export interface PlaylistWithVideos extends Playlist {
+  videos: VideoWithChannel[];
+}

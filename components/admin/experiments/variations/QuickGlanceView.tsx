@@ -1,8 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Recipe } from '@/lib/types';
-import { ExtractedAction } from '@/lib/types/component-lab';
+import { Recipe, Instruction, Ingredient } from '@/lib/types';
 
 interface QuickGlanceViewProps {
   recipe: Recipe;
@@ -11,6 +10,15 @@ interface QuickGlanceViewProps {
   checkedIngredients: number[];
   onStepChange: (step: number) => void;
   onStepComplete: (step: number) => void;
+}
+
+// Extended action type with ingredients
+interface ExtractedActionWithIngredients {
+  verb: string;
+  ingredients: Array<{ item: string; amount: string }>;
+  measurement?: string;
+  fullText: string;
+  stepNumber: number;
 }
 
 // Common cooking action verbs
@@ -23,29 +31,70 @@ const ACTION_VERBS = [
   'steam', 'stir', 'strain', 'stuff', 'toss', 'transfer', 'turn', 'whisk', 'wrap'
 ];
 
-function extractAction(text: string, stepNumber: number): ExtractedAction {
+function formatIngredientAmount(ing: Ingredient): string {
+  const parts: string[] = [];
+  if (ing.quantity) parts.push(ing.quantity);
+  if (ing.unit) parts.push(ing.unit);
+  return parts.join(' ').trim();
+}
+
+function extractAction(instruction: Instruction, recipeIngredients: Ingredient[]): ExtractedActionWithIngredients {
+  const text = instruction.text;
   const words = text.toLowerCase().split(/\s+/);
   const firstWord = words[0].replace(/[^a-z]/g, '');
 
   // Find the action verb
-  let verb = ACTION_VERBS.find(v => text.toLowerCase().includes(v)) || firstWord;
+  let verb = ACTION_VERBS.find(v => firstWord === v) || ACTION_VERBS.find(v => text.toLowerCase().startsWith(v)) || firstWord;
   verb = verb.toUpperCase();
 
-  // Extract subject (usually the noun after the verb)
-  const subjectMatch = text.match(/(?:the\s+)?(\w+(?:\s+\w+)?)\s*(?:until|for|in|with|to|into|on|at|about|over)/i);
-  const subject = subjectMatch ? subjectMatch[1] : '';
+  // Extract ingredients from keywords if available
+  const ingredients: Array<{ item: string; amount: string }> = [];
+  const stepKeywords = instruction.keywords?.ingredients;
 
-  // Extract measurement (time or temperature)
+  if (stepKeywords && stepKeywords.length > 0) {
+    // Check if strings (current format) or objects (future format)
+    const isStringFormat = typeof stepKeywords[0] === 'string';
+
+    if (isStringFormat) {
+      // Match keyword strings against recipe-level ingredients
+      const keywordStrings = stepKeywords as unknown as string[];
+      for (const keyword of keywordStrings) {
+        const matched = recipeIngredients.find(ing =>
+          ing.item.toLowerCase().includes(keyword.toLowerCase()) ||
+          keyword.toLowerCase().includes(ing.item.toLowerCase())
+        );
+        if (matched) {
+          ingredients.push({
+            item: matched.item,
+            amount: formatIngredientAmount(matched),
+          });
+        } else {
+          // No match found, show keyword without amount
+          ingredients.push({ item: keyword, amount: '' });
+        }
+      }
+    } else {
+      // Structured format - use directly
+      for (const ing of stepKeywords as Ingredient[]) {
+        ingredients.push({
+          item: ing.item,
+          amount: formatIngredientAmount(ing),
+        });
+      }
+    }
+  }
+
+  // Extract measurement (time or temperature) from text
   const timeMatch = text.match(/(\d+(?:\s*-\s*\d+)?\s*(?:minutes?|mins?|seconds?|secs?|hours?|hrs?))/i);
   const tempMatch = text.match(/(\d+°?[FC])/i);
   const measurement = timeMatch?.[1] || tempMatch?.[1] || undefined;
 
   return {
     verb,
-    subject,
+    ingredients,
     measurement,
     fullText: text,
-    stepNumber,
+    stepNumber: instruction.step,
   };
 }
 
@@ -59,8 +108,8 @@ export function QuickGlanceView({
   const totalSteps = recipe.instructions.length;
 
   const extractedActions = useMemo(() => {
-    return recipe.instructions.map((inst) => extractAction(inst.text, inst.step));
-  }, [recipe.instructions]);
+    return recipe.instructions.map((inst) => extractAction(inst, recipe.ingredients));
+  }, [recipe.instructions, recipe.ingredients]);
 
   const currentAction = extractedActions.find((a) => a.stepNumber === activeStep);
   const nextAction = extractedActions.find((a) => a.stepNumber === activeStep + 1);
@@ -114,24 +163,37 @@ export function QuickGlanceView({
 
               {/* Extracted action - large and bold */}
               <div className={`transition-opacity ${isPast && !isActive ? 'opacity-40' : ''}`}>
+                {/* Action verb */}
                 <div className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none">
                   <span className="text-violet-400">{action.verb}</span>
-                  {action.subject && (
-                    <span className="text-white ml-3">{action.subject}</span>
-                  )}
                 </div>
 
+                {/* Ingredients list */}
+                {action.ingredients.length > 0 && (
+                  <div className="mt-4 space-y-1">
+                    {action.ingredients.map((ing, idx) => (
+                      <div key={idx} className="flex items-baseline gap-2 text-xl md:text-2xl">
+                        <span className="text-teal-400 font-semibold min-w-[80px]">
+                          {ing.amount || '•'}
+                        </span>
+                        <span className="text-white">{ing.item}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Time/temperature badge */}
                 {action.measurement && (
                   <div className="mt-4">
-                    <span className="inline-block px-4 py-2 bg-teal-500/20 text-teal-300 rounded-lg text-2xl font-bold">
-                      {action.measurement}
+                    <span className="inline-block px-4 py-2 bg-teal-500/20 text-teal-300 rounded-lg text-xl font-bold">
+                      ⏱️ {action.measurement}
                     </span>
                   </div>
                 )}
 
-                {/* Full text - smaller, toggleable */}
+                {/* Full text - shown for current step */}
                 {isActive && (
-                  <p className="mt-6 text-lg text-zinc-500 leading-relaxed max-w-2xl">
+                  <p className="mt-6 text-base text-zinc-500 leading-relaxed max-w-2xl">
                     {action.fullText}
                   </p>
                 )}

@@ -6,6 +6,7 @@ import { Timeline } from './Timeline';
 import { StepList } from './StepList';
 import { TranscriptViewer } from './TranscriptViewer';
 import { VersionControlPanel } from './VersionControlPanel';
+import { ImageUpload } from './ImageUpload';
 import type {
   VideoRecipes,
   AdminRecipeContent,
@@ -76,6 +77,10 @@ export function AdminRecipeViewer({
   const [cleanedTranscript, setCleanedTranscript] = useState<CleanedTranscript | null>(null);
   const [showCleanedTranscript, setShowCleanedTranscript] = useState(false);
   const [isGeneratingCleanTranscript, setIsGeneratingCleanTranscript] = useState(false);
+
+  // Image upload state
+  const [recipeImageUrl, setRecipeImageUrl] = useState<string | null>(null);
+  const [showImageUpload, setShowImageUpload] = useState(false);
 
   const hasUnsavedChanges = pendingChanges.size > 0 || deletedSteps.size > 0;
 
@@ -177,6 +182,22 @@ export function AdminRecipeViewer({
       }
     }
     fetchTranscript();
+  }, [recipe.video_id]);
+
+  // Fetch recipe image URL on mount
+  useEffect(() => {
+    async function fetchImageUrl() {
+      try {
+        const response = await fetch(`/api/admin/recipes/${recipe.video_id}/image`);
+        if (response.ok) {
+          const data = await response.json();
+          setRecipeImageUrl(data.image_url || null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch image URL:', error);
+      }
+    }
+    fetchImageUrl();
   }, [recipe.video_id]);
 
   // Load cleaned transcript from recipe on mount
@@ -530,6 +551,41 @@ export function AdminRecipeViewer({
           isRegenerating2Stage={isRegenerating2Stage}
         />
       )}
+
+      {/* Image Upload Section */}
+      <div className="border-b border-zinc-700">
+        <button
+          onClick={() => setShowImageUpload(!showImageUpload)}
+          className="w-full px-4 py-2 flex items-center justify-between text-sm text-zinc-300 hover:bg-zinc-800/50 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            Recipe Image
+            {recipeImageUrl && (
+              <span className="text-xs text-green-400 ml-1">(uploaded)</span>
+            )}
+          </span>
+          <svg
+            className={`w-4 h-4 transition-transform ${showImageUpload ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {showImageUpload && (
+          <div className="px-4 py-3 bg-zinc-800/30">
+            <ImageUpload
+              videoId={recipe.video_id}
+              currentImageUrl={recipeImageUrl}
+              onImageChange={setRecipeImageUrl}
+            />
+          </div>
+        )}
+      </div>
 
       {showRawJson ? (
         <div className="flex-1 overflow-auto p-4 bg-zinc-950">

@@ -1,60 +1,131 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import type { RecipeListItem, ChannelInfo } from '@/lib/types/admin';
+import type { RecipeListItem, ChannelInfo, PaginatedRecipeListResponse } from '@/lib/types/admin';
+
+const ITEMS_PER_PAGE = 50;
 
 export default function AdminPage() {
+  // Data state
   const [recipes, setRecipes] = useState<RecipeListItem[]>([]);
   const [channels, setChannels] = useState<ChannelInfo[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  // Filter state
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedChannel, setSelectedChannel] = useState<string>('');
 
+  // Loading state
+  const [loading, setLoading] = useState(true);
+  const [loadingPage, setLoadingPage] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Debounce search input
   useEffect(() => {
-    async function fetchData() {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Reset to page 1 on search change
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset to page 1 when channel changes
+  useEffect(() => {
+    setPage(1);
+  }, [selectedChannel]);
+
+  // Fetch channels on mount
+  useEffect(() => {
+    async function fetchChannels() {
       try {
-        // Fetch channels and recipes in parallel
-        const [channelsRes, recipesRes] = await Promise.all([
-          fetch('/api/admin/channels'),
-          fetch('/api/admin/recipes'),
-        ]);
-
-        if (!channelsRes.ok || !recipesRes.ok) {
-          throw new Error('Failed to fetch data');
-        }
-
-        const channelsData = await channelsRes.json();
-        const recipesData = await recipesRes.json();
-
-        setChannels(channelsData.channels || []);
-        setRecipes(recipesData);
+        const res = await fetch('/api/admin/channels');
+        if (!res.ok) throw new Error('Failed to fetch channels');
+        const data = await res.json();
+        setChannels(data.channels || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load data');
-      } finally {
-        setLoading(false);
+        console.error('Error fetching channels:', err);
       }
     }
-    fetchData();
+    fetchChannels();
   }, []);
 
-  const filteredRecipes = recipes.filter((recipe) => {
-    // Channel filter
-    if (selectedChannel && recipe.channel_id !== selectedChannel) {
-      return false;
+  // Fetch recipes when page, search, or channel changes
+  const fetchRecipes = useCallback(async () => {
+    setLoadingPage(true);
+    setError(null);
+
+    try {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: ITEMS_PER_PAGE.toString(),
+      });
+
+      if (debouncedSearch) {
+        params.set('search', debouncedSearch);
+      }
+      if (selectedChannel) {
+        params.set('channel', selectedChannel);
+      }
+
+      const res = await fetch(`/api/admin/recipes?${params}`);
+      if (!res.ok) throw new Error('Failed to fetch recipes');
+
+      const data: PaginatedRecipeListResponse = await res.json();
+
+      setRecipes(data.items);
+      setTotalPages(data.totalPages);
+      setTotalItems(data.total);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load recipes');
+    } finally {
+      setLoading(false);
+      setLoadingPage(false);
     }
-    // Text search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        recipe.title.toLowerCase().includes(query) ||
-        recipe.video_id.toLowerCase().includes(query) ||
-        (recipe.channel_name?.toLowerCase().includes(query) ?? false)
-      );
+  }, [page, debouncedSearch, selectedChannel]);
+
+  useEffect(() => {
+    fetchRecipes();
+  }, [fetchRecipes]);
+
+  // Pagination helpers
+  const startItem = totalItems === 0 ? 0 : (page - 1) * ITEMS_PER_PAGE + 1;
+  const endItem = Math.min(page * ITEMS_PER_PAGE, totalItems);
+
+  const goToPage = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    return true;
-  });
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    const maxVisible = 7;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push('ellipsis');
+
+      const start = Math.max(2, page - 1);
+      const end = Math.min(totalPages - 1, page + 1);
+
+      for (let i = start; i <= end; i++) pages.push(i);
+
+      if (page < totalPages - 2) pages.push('ellipsis');
+      pages.push(totalPages);
+    }
+
+    return pages;
+  };
 
   if (loading) {
     return (
@@ -73,7 +144,7 @@ export default function AdminPage() {
         <div className="text-center">
           <p className="text-red-400 mb-4">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => fetchRecipes()}
             className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-600 transition-colors"
           >
             Retry
@@ -92,6 +163,7 @@ export default function AdminPage() {
         </p>
       </div>
 
+      {/* Search and Filters */}
       <div className="mb-6 flex gap-4">
         <div className="flex-1">
           <input
@@ -118,17 +190,34 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="mb-4 text-sm text-zinc-500">
-        {filteredRecipes.length} recipe{filteredRecipes.length !== 1 ? 's' : ''} found
+      {/* Results count and loading indicator */}
+      <div className="mb-4 flex items-center justify-between">
+        <div className="text-sm text-zinc-500">
+          {loadingPage ? (
+            <span className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-zinc-600 border-t-zinc-300 rounded-full animate-spin" />
+              Loading...
+            </span>
+          ) : (
+            <>
+              {totalItems === 0
+                ? 'No recipes found'
+                : `Showing ${startItem}-${endItem} of ${totalItems.toLocaleString()} recipes`}
+            </>
+          )}
+        </div>
       </div>
 
-      {filteredRecipes.length === 0 ? (
+      {/* Recipe List */}
+      {recipes.length === 0 && !loadingPage ? (
         <div className="text-center py-12 text-zinc-500">
-          {searchQuery ? 'No recipes match your search.' : 'No recipes available.'}
+          {debouncedSearch || selectedChannel
+            ? 'No recipes match your filters.'
+            : 'No recipes available.'}
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredRecipes.map((recipe) => (
+          {recipes.map((recipe) => (
             <Link
               key={recipe.video_id}
               href={`/admin/recipe/${recipe.video_id}`}
@@ -147,10 +236,19 @@ export default function AdminPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 flex gap-2">
+                  {recipe.has_transcript ? (
+                    <span className="px-2 py-1 text-xs bg-blue-900/50 text-blue-400 rounded">
+                      Transcript
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 text-xs bg-zinc-700 text-zinc-400 rounded">
+                      No Transcript
+                    </span>
+                  )}
                   {recipe.has_recipe ? (
                     <span className="px-2 py-1 text-xs bg-green-900/50 text-green-400 rounded">
-                      Has Recipe
+                      Recipe
                     </span>
                   ) : (
                     <span className="px-2 py-1 text-xs bg-zinc-700 text-zinc-400 rounded">
@@ -161,6 +259,50 @@ export default function AdminPage() {
               </div>
             </Link>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex items-center justify-between">
+          <button
+            onClick={() => goToPage(page - 1)}
+            disabled={page === 1 || loadingPage}
+            className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Previous
+          </button>
+
+          <div className="flex items-center gap-1">
+            {getPageNumbers().map((pageNum, idx) =>
+              pageNum === 'ellipsis' ? (
+                <span key={`ellipsis-${idx}`} className="px-2 text-zinc-500">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={pageNum}
+                  onClick={() => goToPage(pageNum)}
+                  disabled={loadingPage}
+                  className={`px-3 py-1 rounded-lg transition-colors ${
+                    page === pageNum
+                      ? 'bg-zinc-600 text-zinc-100'
+                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              )
+            )}
+          </div>
+
+          <button
+            onClick={() => goToPage(page + 1)}
+            disabled={page === totalPages || loadingPage}
+            className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-200 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

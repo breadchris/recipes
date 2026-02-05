@@ -70,6 +70,7 @@ export interface VideoRecipes {
   upload_date: string;
   recipes: AdminRecipeContent[];
   cleaned_transcript?: CleanedTranscript;
+  image_url?: string; // Custom uploaded recipe image URL
 }
 
 // For listing recipes in the admin panel
@@ -77,8 +78,18 @@ export interface RecipeListItem {
   video_id: string;
   title: string;
   has_recipe: boolean;
+  has_transcript: boolean;
   channel_name?: string;
   channel_id?: string;
+}
+
+// Paginated response for recipe listing
+export interface PaginatedRecipeListResponse {
+  items: RecipeListItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 // Channel info for filtering

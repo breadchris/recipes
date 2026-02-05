@@ -7,6 +7,53 @@ import {
 } from './clean-transcript-prompt';
 
 /**
+ * Get the AI client configured based on environment.
+ * Uses OpenRouter when USE_OPENROUTER=true, otherwise uses OpenAI directly.
+ */
+function getAIClient(): OpenAI {
+  const useOpenRouter = process.env.USE_OPENROUTER === 'true';
+
+  if (useOpenRouter) {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      throw new Error('OPENROUTER_API_KEY environment variable is not set');
+    }
+    return new OpenAI({
+      apiKey,
+      baseURL: 'https://openrouter.ai/api/v1',
+      defaultHeaders: {
+        'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+        'X-Title': 'Recipes App',
+      },
+    });
+  } else {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY environment variable is not set');
+    }
+    return new OpenAI({ apiKey });
+  }
+}
+
+/**
+ * Get the model name, mapping to OpenRouter format when needed.
+ */
+function getModelName(model: string): string {
+  const useOpenRouter = process.env.USE_OPENROUTER === 'true';
+  if (!useOpenRouter) return model;
+
+  // OpenRouter requires provider prefix for models
+  const modelMap: Record<string, string> = {
+    'gpt-4.1-nano': 'openai/gpt-4.1-nano',
+    'gpt-4o': 'openai/gpt-4o',
+    'gpt-4o-mini': 'openai/gpt-4o-mini',
+    'gpt-4-turbo': 'openai/gpt-4-turbo',
+    'gpt-3.5-turbo': 'openai/gpt-3.5-turbo',
+  };
+  return modelMap[model] || (model.includes('/') ? model : `openai/${model}`);
+}
+
+/**
  * Video metadata structure for recipe extraction
  */
 export interface VideoMetadata {
@@ -27,15 +74,9 @@ export async function extractRecipeWithAI(
   promptTemplate: string,
   options?: { model?: string; temperature?: number }
 ): Promise<VideoRecipes | null> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const client = getAIClient();
 
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY environment variable is not set');
-  }
-
-  const client = new OpenAI({ apiKey });
-
-  const model = options?.model || 'gpt-4o';
+  const model = getModelName(options?.model || 'gpt-4.1-nano');
   const temperature = options?.temperature ?? 0.3;
 
   // Parse description timestamps and format for prompt
@@ -91,15 +132,9 @@ export async function generateCleanTranscript(
   transcriptText: string,
   options?: { model?: string; temperature?: number; prompt?: string; description?: string }
 ): Promise<CleanedTranscript | null> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const client = getAIClient();
 
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY environment variable is not set');
-  }
-
-  const client = new OpenAI({ apiKey });
-
-  const model = options?.model || 'gpt-4o';
+  const model = getModelName(options?.model || 'gpt-4.1-nano');
   const temperature = options?.temperature ?? 0.3;
   const promptTemplate = options?.prompt || DEFAULT_CLEAN_TRANSCRIPT_PROMPT;
 
@@ -284,15 +319,9 @@ export async function extractAllRecipes(
   existingRecipes: { title: string }[],
   options?: { model?: string; temperature?: number; maxIterations?: number }
 ): Promise<{ recipes: VideoRecipes; iterations: number }> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const client = getAIClient();
 
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY environment variable is not set');
-  }
-
-  const client = new OpenAI({ apiKey });
-
-  const model = options?.model || 'gpt-4o';
+  const model = getModelName(options?.model || 'gpt-4.1-nano');
   const temperature = options?.temperature ?? 0.3;
   const maxIterations = options?.maxIterations ?? 10;
   const maxRecipes = 50;

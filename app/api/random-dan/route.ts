@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getAllVideos } from '@/lib/dataLoader';
-import type { CleanedTranscriptSection } from '@/lib/types';
+import { createServerSupabaseClient } from '@/lib/clients/supabaseServer';
+import type { CleanedTranscriptSection, CleanedTranscript } from '@/lib/types';
+
+const RECIPES_GROUP_ID = '52f7d41b-490e-40d1-b5da-eb1d74ec2eae';
 
 interface RandomSectionResponse {
   videoId: string;
@@ -11,20 +13,43 @@ interface RandomSectionResponse {
   sectionIndex: number;
 }
 
+interface DanVideoRecord {
+  metadata: {
+    youtube_video_id: string;
+    youtube_title: string;
+    cleaned_transcript?: CleanedTranscript;
+  };
+}
+
 /**
  * GET /api/random-dan
  * Get a random section from a random "What's Eating Dan?" video
  */
 export async function GET() {
   try {
-    const videos = await getAllVideos();
+    const supabase = createServerSupabaseClient();
 
-    // Filter for Dan videos with cleaned transcripts
-    const danVideos = videos.filter((v) => {
-      const isDanVideo = /What.*Eating.*Dan/i.test(v.title);
-      const hasSections = v.cleaned_transcript?.sections?.length;
-      return isDanVideo && hasSections;
-    });
+    // Query Supabase directly for "What's Eating Dan" videos with cleaned transcripts
+    const { data, error } = await supabase
+      .from('content')
+      .select('metadata')
+      .eq('group_id', RECIPES_GROUP_ID)
+      .eq('type', 'text')
+      .ilike('metadata->>youtube_title', '%What%Eating%Dan%')
+      .not('metadata->cleaned_transcript', 'is', null);
+
+    if (error) {
+      console.error('Error querying Supabase:', error);
+      return NextResponse.json(
+        { error: 'Failed to query videos' },
+        { status: 500 }
+      );
+    }
+
+    // Filter for videos that have sections in their cleaned transcript
+    const danVideos = (data as DanVideoRecord[]).filter(
+      (record) => record.metadata?.cleaned_transcript?.sections?.length
+    );
 
     if (danVideos.length === 0) {
       return NextResponse.json(
@@ -35,10 +60,11 @@ export async function GET() {
 
     // Pick a random video
     const randomVideoIndex = Math.floor(Math.random() * danVideos.length);
-    const video = danVideos[randomVideoIndex];
+    const record = danVideos[randomVideoIndex];
+    const { youtube_video_id, youtube_title, cleaned_transcript } = record.metadata;
 
     // Filter out conclusion sections
-    const filteredSections = video.cleaned_transcript!.sections.filter(
+    const filteredSections = cleaned_transcript!.sections.filter(
       (section) => !section.heading?.toLowerCase().includes('conclusion')
     );
 
@@ -54,9 +80,9 @@ export async function GET() {
     const section = filteredSections[randomSectionIndex];
 
     const response: RandomSectionResponse = {
-      videoId: video.id,
-      videoUrl: `https://www.youtube.com/watch?v=${video.id}`,
-      videoTitle: video.title,
+      videoId: youtube_video_id,
+      videoUrl: `https://www.youtube.com/watch?v=${youtube_video_id}`,
+      videoTitle: youtube_title,
       section,
       totalSections: filteredSections.length,
       sectionIndex: randomSectionIndex,

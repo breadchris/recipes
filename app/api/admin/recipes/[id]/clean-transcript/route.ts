@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loadRawVtt, loadVideoMetadata } from '@/lib/admin/data/file-io';
-import { parseVttToTimestampedText } from '@/lib/admin/data/vtt-parser';
-import { generateCleanTranscript } from '@/lib/admin/openai/client';
 import {
+  loadRawVtt,
+  loadVideoMetadata,
   loadCurrentVersion,
   updateCurrentVersion,
-} from '@/lib/admin/data/recipe-versions';
+} from '@/lib/admin/data/supabase-io';
+import { parseVttToTimestampedText } from '@/lib/admin/data/vtt-parser';
+import { generateCleanTranscript } from '@/lib/admin/openai/client';
 import type { CleanedTranscript } from '@/lib/types/admin';
 
 interface CleanTranscriptRequest {

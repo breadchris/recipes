@@ -28,3 +28,6 @@ export const typesenseAdminClient = new Typesense.Client({
 
 export const COLLECTION_NAME = 'recipes';
 export const SCRAPED_COLLECTION_NAME = 'scraped-recipes';
+export const PLAYLIST_COLLECTION_NAME = 'playlists';
+export const INGREDIENTS_COLLECTION_NAME = 'ingredients';
+export const TAG_STATS_COLLECTION_NAME = 'tag-stats';

@@ -1,5 +1,5 @@
-import { typesenseClient, COLLECTION_NAME } from './typesense';
-import { VideoWithChannel } from './types';
+import { typesenseClient, COLLECTION_NAME, PLAYLIST_COLLECTION_NAME } from './typesense';
+import { VideoWithChannel, Playlist } from './types';
 
 export interface SearchFilters {
   hasRecipeOnly?: boolean;
@@ -322,6 +322,61 @@ export async function searchByIngredients(
     return scoredResults.slice(0, limit);
   } catch (error) {
     console.error('❌ Typesense pantry search error:', error);
+    return [];
+  }
+}
+
+/**
+ * Search playlists using Typesense with field boosting
+ * @param query - The search query
+ * @param limit - Maximum number of results to return (default: 50)
+ * @returns Array of playlists sorted by relevance
+ */
+export async function searchPlaylists(
+  query: string,
+  limit: number = 50
+): Promise<Playlist[]> {
+  if (!query || query.trim().length === 0) {
+    return [];
+  }
+
+  try {
+    const searchParameters: any = {
+      q: query,
+      query_by: 'title,description,channelName',
+      query_by_weights: '3,2,1', // Title: 3x, Description: 2x, Channel: 1x
+      sort_by: '_text_match:desc,video_count:desc',
+      per_page: limit,
+      prefix: true,
+      typo_tolerance: true,
+      num_typos: 2,
+    };
+
+    const searchResult = await typesenseClient
+      .collections(PLAYLIST_COLLECTION_NAME)
+      .documents()
+      .search(searchParameters);
+
+    // Transform Typesense results to Playlist format
+    const playlists: Playlist[] = (searchResult.hits || []).map((hit: any) => {
+      const doc = hit.document;
+      return {
+        id: doc.id,
+        title: doc.title,
+        description: doc.description,
+        channel_id: doc.channel_id,
+        channelName: doc.channelName,
+        channelSlug: doc.channelSlug,
+        url: doc.url,
+        video_count: doc.video_count,
+        video_ids: [], // Not stored in Typesense, will be loaded from index if needed
+        thumbnails: JSON.parse(doc.thumbnails || '[]'),
+      } as Playlist;
+    });
+
+    return playlists;
+  } catch (error) {
+    console.error('❌ Typesense playlist search error:', error);
     return [];
   }
 }

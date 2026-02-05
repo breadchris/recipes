@@ -10,6 +10,11 @@ import { VoiceOptimizedView } from './variations/VoiceOptimizedView';
 import { ProgressTrackerView } from './variations/ProgressTrackerView';
 import { TimerCentricView } from './variations/TimerCentricView';
 import { AIVoiceAssistantView } from './variations/AIVoiceAssistantView';
+import { RecipeChatConversational } from './variations/chat/RecipeChatConversational';
+import { RecipeChatFocused } from './variations/chat/RecipeChatFocused';
+import { RecipeChatGuided } from './variations/chat/RecipeChatGuided';
+import { useRecipeChat } from '@/lib/hooks/useRecipeChat';
+import { useCallback, useRef } from 'react';
 
 interface RecipeViewLabProps {
   recipe: Recipe | null;
@@ -19,7 +24,36 @@ export function RecipeViewLab({ recipe }: RecipeViewLabProps) {
   const { activeVariation, simulatedActiveStep, simulatedProgress, setActiveStep, toggleStepComplete } =
     useComponentLabStore();
 
-  if (!recipe) {
+  // Chat state - shared across chat variants
+  const {
+    messages, input, setInput, isLoading, error, sendMessage, setMessages,
+    generateRecipe, generatedRecipe, generatingRecipe
+  } = useRecipeChat();
+
+  // Ref to avoid recreating handleSubmit on every input change
+  const inputRef = useRef(input);
+  inputRef.current = input;
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+  }, [setInput]);
+
+  const handleSubmit = useCallback((e?: { preventDefault?: () => void }) => {
+    e?.preventDefault?.();
+    if (!inputRef.current.trim() || isLoading) return;
+    sendMessage(inputRef.current);
+    setInput('');
+  }, [isLoading, sendMessage, setInput]);
+
+  const append = useCallback((content: string) => {
+    sendMessage(content);
+  }, [sendMessage]);
+
+  // Check if this is a chat variant (doesn't need recipe)
+  const isChatVariant = activeVariation?.startsWith('chat-');
+
+  // Show placeholder for recipe-based variants when no recipe selected
+  if (!recipe && !isChatVariant) {
     return (
       <div className="flex-1 flex items-center justify-center bg-zinc-950">
         <div className="text-center text-zinc-500">
@@ -44,12 +78,24 @@ export function RecipeViewLab({ recipe }: RecipeViewLabProps) {
   }
 
   const variationProps = {
-    recipe,
+    recipe: recipe!,
     activeStep: simulatedActiveStep,
     completedSteps: simulatedProgress.completedSteps,
     checkedIngredients: simulatedProgress.checkedIngredients,
     onStepChange: setActiveStep,
     onStepComplete: toggleStepComplete,
+  };
+
+  const chatProps = {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    error,
+    generatingRecipe,
+    generatedRecipe,
+    onGenerateRecipe: generateRecipe,
   };
 
   return (
@@ -60,6 +106,9 @@ export function RecipeViewLab({ recipe }: RecipeViewLabProps) {
       {activeVariation === 'progress-tracker' && <ProgressTrackerView {...variationProps} />}
       {activeVariation === 'timer-centric' && <TimerCentricView {...variationProps} />}
       {activeVariation === 'ai-voice-assistant' && <AIVoiceAssistantView {...variationProps} />}
+      {activeVariation === 'chat-conversational' && <RecipeChatConversational {...chatProps} />}
+      {activeVariation === 'chat-focused' && <RecipeChatFocused {...chatProps} setMessages={setMessages} />}
+      {activeVariation === 'chat-guided' && <RecipeChatGuided {...chatProps} append={append} />}
     </div>
   );
 }

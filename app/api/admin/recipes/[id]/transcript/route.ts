@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loadRawVtt, loadTranscriptSegments } from '@/lib/admin/data/file-io';
+import { loadRawVtt, loadTranscriptSegments } from '@/lib/admin/data/supabase-io';
 import { parseVtt } from '@/lib/admin/data/vtt-parser';
 
 /**

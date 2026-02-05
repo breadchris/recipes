@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { loadVideoMetadata } from '@/lib/admin/data/file-io';
+import { loadVideoMetadata } from '@/lib/admin/data/supabase-io';
 
 interface VideoDetails {
   id: string;

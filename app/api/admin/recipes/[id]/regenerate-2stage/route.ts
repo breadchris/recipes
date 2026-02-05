@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loadVideoMetadata, loadRawVtt } from '@/lib/admin/data/file-io';
+import {
+  loadVideoMetadata,
+  loadRawVtt,
+  saveNewVersion,
+  loadCurrentVersion,
+  normalizeRecipe,
+} from '@/lib/admin/data/supabase-io';
 import { parseVttToTimestampedText } from '@/lib/admin/data/vtt-parser';
 import {
   generateCleanTranscript,
   generateRecipeFromCleanedTranscript,
 } from '@/lib/admin/openai/client';
 import { DEFAULT_RECIPE_PROMPT } from '@/lib/admin/openai/default-prompt';
-import {
-  saveNewVersion,
-  loadCurrentVersion,
-  normalizeRecipe,
-} from '@/lib/admin/data/recipe-versions';
 import type { RegenerateRequest, TwoStageRegenerateResponse } from '@/lib/types/admin';
 
 /**
@@ -28,7 +29,7 @@ export async function POST(
     const body = (await request.json()) as RegenerateRequest;
 
     const prompt = body.prompt || DEFAULT_RECIPE_PROMPT;
-    const model = body.model || 'gpt-4o';
+    const model = body.model || 'gpt-4.1-nano';
     const temperature = body.temperature ?? 0.3;
 
     // Load video metadata

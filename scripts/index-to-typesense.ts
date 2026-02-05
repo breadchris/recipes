@@ -1,11 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as zlib from 'zlib';
 import Typesense from 'typesense';
 import { config } from 'dotenv';
 
 // Load environment variables from .env.local
 config({ path: path.join(__dirname, '../.env.local') });
+
+import { getAllVideos, getAllChannels } from '../lib/supabaseDataLoader';
 
 const COLLECTION_NAME = 'recipes';
 
@@ -104,13 +105,12 @@ async function indexToTypesense() {
     connectionTimeoutSeconds: 10,
   });
 
-  // Load recipes data
-  const dataPath = path.join(__dirname, '../data/recipes-data.json.gz');
-  const compressedData = fs.readFileSync(dataPath);
-  const decompressedData = zlib.gunzipSync(compressedData);
-  const recipesData: RecipesData = JSON.parse(decompressedData.toString());
+  // Load recipes data from Supabase
+  console.log('📊 Loading data from Supabase...');
+  const [videos, channels] = await Promise.all([getAllVideos(), getAllChannels()]);
+  const recipesData: RecipesData = { videos, channels };
 
-  console.log(`📊 Loaded ${recipesData.videos.length} videos and ${recipesData.channels.length} channels`);
+  console.log(`📊 Loaded ${recipesData.videos.length} videos and ${recipesData.channels.length} channels from Supabase`);
 
   // Load priority channels config
   const priorityConfigPath = path.join(__dirname, '../data/priority-channels.json');

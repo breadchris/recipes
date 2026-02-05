@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { RecipeViewer } from './recipe-viewer';
-import { getVideoById, getChannelBySlug, getAllVideos } from '@/lib/dataLoader';
+import { RecipeViewerWrapper } from './recipe-viewer-wrapper';
+import { getVideoById } from '@/lib/dataLoader';
 
 interface RecipePageProps {
   params: Promise<{ videoId: string }>;
@@ -95,19 +95,9 @@ export async function generateMetadata({ params }: RecipePageProps): Promise<Met
 // Enable ISR - revalidate cached pages every hour
 export const revalidate = 3600;
 
-// Skip static generation in Vercel builds to avoid OOM
-// Pages will be generated on-demand and cached via ISR
-export async function generateStaticParams() {
-  if (process.env.VERCEL) {
-    return [];
-  }
-  // Local builds can pre-generate top 100 recipes
-  const videos = await getAllVideos();
-  const topVideos = videos
-    .filter(v => v.recipes?.length)
-    .sort((a, b) => b.view_count - a.view_count)
-    .slice(0, 100);
-  return topVideos.map(v => ({ videoId: v.id }));
+// Skip static generation - pages will be generated on-demand and cached via ISR
+export function generateStaticParams() {
+  return [];
 }
 
 export default async function RecipePage({ params }: RecipePageProps) {
@@ -118,27 +108,7 @@ export default async function RecipePage({ params }: RecipePageProps) {
     notFound();
   }
 
-  // Only load the channel this video belongs to (using slug for filename lookup)
-  const channel = await getChannelBySlug(video.channelSlug);
-  if (!channel) {
-    notFound();
-  }
-
-  const channelVideos = channel.entries.map(v => ({
-    ...v,
-    channelName: channel.channel,
-    channelFollowers: channel.channel_follower_count,
-  }));
-
-  const currentIndex = channelVideos.findIndex(v => v.id === videoId);
-  const previousVideo = currentIndex > 0 ? channelVideos[currentIndex - 1] : null;
-  const nextVideo = currentIndex < channelVideos.length - 1 ? channelVideos[currentIndex + 1] : null;
-
   return (
-    <RecipeViewer
-      video={video}
-      previousVideo={previousVideo}
-      nextVideo={nextVideo}
-    />
+    <RecipeViewerWrapper video={video} />
   );
 }

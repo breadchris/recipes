@@ -114,11 +114,35 @@ export const RECIPE_VIEW_VARIATIONS: ComponentVariation[] = [
   },
 ];
 
+export const RECIPE_CHAT_VARIATIONS: ComponentVariation[] = [
+  {
+    id: 'chat-conversational',
+    name: 'Conversational',
+    description: 'Full chat history with recipe cards inline',
+  },
+  {
+    id: 'chat-focused',
+    name: 'Focused',
+    description: 'Single exchange with recipe grid below',
+  },
+  {
+    id: 'chat-guided',
+    name: 'Guided',
+    description: 'Quick action buttons with chat',
+  },
+];
+
 export const COMPONENT_CATEGORIES: ComponentCategory[] = [
   {
     id: 'recipe-view',
     name: 'Recipe View',
     description: 'Different layouts for viewing recipes while cooking',
     variations: RECIPE_VIEW_VARIATIONS,
+  },
+  {
+    id: 'recipe-chat',
+    name: 'Recipe Chat',
+    description: 'Find recipes through AI conversation with search capabilities',
+    variations: RECIPE_CHAT_VARIATIONS,
   },
 ];

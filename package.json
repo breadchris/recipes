@@ -9,8 +9,10 @@
     "build:food-types": "tsx scripts/build-food-type-index.ts",
     "build:recipe-types": "tsx scripts/build-recipe-type-index.ts",
     "build:tags": "tsx scripts/build-tag-index.ts",
-    "build:indexes": "npm run build:ingredients && npm run build:food-types && npm run build:recipe-types && npm run build:tags",
+    "build:playlists": "tsx scripts/build-playlist-index.ts",
+    "build:indexes": "npm run build:ingredients && npm run build:food-types && npm run build:recipe-types && npm run build:tags && npm run build:playlists",
     "index:typesense": "tsx scripts/index-to-typesense.ts",
+    "index:playlists": "tsx scripts/index-playlists-to-typesense.ts",
     "index:scraped": "tsx scripts/index-scraped-to-typesense.ts",
     "index:nutrition": "tsx scripts/index-nutrition-to-typesense.ts",
     "build": "next build",
@@ -24,6 +26,9 @@
     "pipeline:generate": "tsx pipeline/generate.ts",
     "pipeline:transcript": "tsx pipeline/transcript.ts",
     "pipeline:clean-transcript": "tsx pipeline/clean-transcript.ts",
+    "pipeline:batch-generate": "tsx pipeline/batch-generate.ts",
+    "pipeline:batch-transcript": "tsx pipeline/batch-transcript.ts",
+    "pipeline:channels": "tsx pipeline/channels.ts",
     "test": "vitest"
   },
   "dependencies": {

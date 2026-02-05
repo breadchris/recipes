@@ -10,7 +10,6 @@ const nextConfig: NextConfig = {
       './data/youtube-cache/**',
       './data/scrape/**',
       './data/fooddata/**',
-      './data/recipes-data.json.gz',
       './data/scraped-recipes-lookup.json.gz',
       './data/scraped-recipes-lookup.json',
       './data/search-index.json',

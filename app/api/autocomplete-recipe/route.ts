@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     const client = new OpenAI({ apiKey });
 
     const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini', // Faster and cheaper for autocomplete
+      model: 'gpt-4.1-nano', // Faster and cheaper for autocomplete
       messages: [
         {
           role: 'system',

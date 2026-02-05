@@ -3,13 +3,12 @@ import {
   isLegacyFormat,
   migrateFromLegacy,
   loadVersion,
-  loadCurrentVersion,
   getCurrentVersion,
   getAvailableVersionNumbers,
   updateCurrentVersion,
   normalizeRecipe,
-} from '@/lib/admin/data/recipe-versions';
-import { recipeExists } from '@/lib/admin/data/file-io';
+  recipeExists,
+} from '@/lib/admin/data/supabase-io';
 import type { VersionedRecipeResponse, StepChange, VideoRecipes } from '@/lib/types/admin';
 
 /**
@@ -26,7 +25,7 @@ export async function GET(
     const versionParam = searchParams.get('version');
 
     // Check if recipe exists
-    if (!recipeExists(videoId)) {
+    if (!(await recipeExists(videoId))) {
       return NextResponse.json(
         { error: 'Recipe not found' },
         { status: 404 }
@@ -82,7 +81,7 @@ export async function PATCH(
     const body = await request.json();
     const { recipeIndex, changes } = body as { recipeIndex: number; changes: StepChange[] };
 
-    if (!recipeExists(videoId)) {
+    if (!(await recipeExists(videoId))) {
       return NextResponse.json(
         { error: 'Recipe not found' },
         { status: 404 }

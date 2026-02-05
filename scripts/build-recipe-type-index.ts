@@ -29,7 +29,7 @@ import {
 // Configuration
 const BATCH_SIZE = 50;
 const CONCURRENCY = 5;
-const MODEL = 'gpt-4o';
+const MODEL = 'gpt-4.1-nano';
 const TEMPERATURE = 0.3;
 
 interface Recipe {

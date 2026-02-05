@@ -1,67 +1,58 @@
 import { NextResponse } from 'next/server';
-import { getAllVideoIds, loadVideoMetadata, recipeExists, hasTranscript } from '@/lib/admin/data/file-io';
-import { isLegacyFormat, loadCurrentVersion } from '@/lib/admin/data/recipe-versions';
-import type { RecipeListItem } from '@/lib/types/admin';
+import { getVideosForListingPaginated } from '@/lib/admin/data/supabase-io';
+import type { PaginatedRecipeListResponse } from '@/lib/types/admin';
 
 /**
  * GET /api/admin/recipes
- * List all videos in the youtube-cache
+ * List videos with pagination and filtering
  * Query params:
- *   - has_recipe: 'true' | 'false' - filter by recipe existence
- *   - has_transcript: 'true' | 'false' - filter by transcript existence
- *   - has_keywords: 'true' - only show recipes with keyword support (legacy behavior)
+ *   - page: number (default: 1) - current page
+ *   - limit: number (default: 50) - items per page
+ *   - search: string - text search (title, video_id, channel)
  *   - channel: channel_id - filter by channel
+ *   - has_recipe: 'true' | 'false' - filter by recipe existence
  */
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const filterHasRecipe = searchParams.get('has_recipe');
-    const filterHasTranscript = searchParams.get('has_transcript');
-    const filterHasKeywords = searchParams.get('has_keywords') === 'true';
-    const filterChannel = searchParams.get('channel');
 
-    const videoIds = await getAllVideoIds();
-    const recipes: RecipeListItem[] = [];
+    // Pagination params
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50')));
 
-    for (const videoId of videoIds) {
-      // Load metadata to get the title and channel info
-      const metadata = await loadVideoMetadata(videoId);
-      const title = metadata?.fulltitle || metadata?.title || videoId;
-      const channelName = metadata?.channel;
-      const channelId = metadata?.channel_id;
+    // Filter params
+    const search = searchParams.get('search') || undefined;
+    const channelId = searchParams.get('channel') || undefined;
+    const hasRecipeParam = searchParams.get('has_recipe');
+    const hasRecipe = hasRecipeParam === 'true' ? true :
+                      hasRecipeParam === 'false' ? false : undefined;
 
-      // Check if recipe exists
-      const hasRecipeFlag = recipeExists(videoId);
-      const hasTranscriptFlag = hasTranscript(videoId);
+    // Fetch paginated results
+    const result = await getVideosForListingPaginated({
+      page,
+      limit,
+      search,
+      channelId,
+      hasRecipe,
+    });
 
-      // Apply filters
-      if (filterHasRecipe === 'true' && !hasRecipeFlag) continue;
-      if (filterHasRecipe === 'false' && hasRecipeFlag) continue;
-      if (filterHasTranscript === 'true' && !hasTranscriptFlag) continue;
-      if (filterHasTranscript === 'false' && hasTranscriptFlag) continue;
-      if (filterChannel && channelId !== filterChannel) continue;
+    // Map to response format
+    const response: PaginatedRecipeListResponse = {
+      items: result.items.map(video => ({
+        video_id: video.video_id,
+        title: video.title,
+        has_recipe: video.has_recipe,
+        has_transcript: video.has_transcript,
+        channel_name: video.channel_name,
+        channel_id: video.channel_id,
+      })),
+      total: result.total,
+      page,
+      limit,
+      totalPages: Math.ceil(result.total / limit),
+    };
 
-      // Legacy behavior: filter for keyword support
-      if (filterHasKeywords && hasRecipeFlag) {
-        const isLegacy = await isLegacyFormat(videoId);
-        if (isLegacy) continue;
-
-        const versioned = await loadCurrentVersion(videoId);
-        if (!versioned?.recipe?.recipes?.[0]?.instructions?.[0]?.keywords) {
-          continue;
-        }
-      }
-
-      recipes.push({
-        video_id: videoId,
-        title,
-        has_recipe: hasRecipeFlag,
-        channel_name: channelName,
-        channel_id: channelId,
-      });
-    }
-
-    return NextResponse.json(recipes);
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error listing recipes:', error);
     return NextResponse.json(

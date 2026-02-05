@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { browseVideos, SearchFilters } from '@/lib/searchIndex';
-import { getVideoById } from '@/lib/dataLoader';
+import { getVideosByIds } from '@/lib/dataLoader';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,19 +37,15 @@ export async function GET(request: NextRequest) {
 
     const results = await browseVideos(filters, limit, offset);
 
-    // Enrich results with recipe titles from source data
-    const enrichedResults = await Promise.all(
-      results.map(async (video) => {
-        try {
-          const fullVideo = await getVideoById(video.id);
-          const recipeTitle = fullVideo?.recipes?.[0]?.title || '';
-          return { ...video, recipeTitle };
-        } catch (error) {
-          console.error(`Failed to enrich video ${video.id}:`, error);
-          return { ...video, recipeTitle: '' };
-        }
-      })
-    );
+    // Bulk enrich results with recipe titles from source data
+    const videoIds = results.map(video => video.id);
+    const videoMap = await getVideosByIds(videoIds);
+
+    const enrichedResults = results.map(video => {
+      const fullVideo = videoMap.get(video.id);
+      const recipeTitle = fullVideo?.recipes?.[0]?.title || '';
+      return { ...video, recipeTitle };
+    });
 
     return NextResponse.json(enrichedResults);
   } catch (error) {
