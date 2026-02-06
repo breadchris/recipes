@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { GeneratedRecipeDisplay } from '../page';
+import RecipeTimer from '@/components/RecipeTimer';
 import type { GeneratedRecipeRecord } from '@/lib/types/generated-recipe';
 import type { GeneratedRecipe } from '@/lib/schemas/recipe';
 
@@ -77,6 +78,7 @@ export default function SavedRecipePage() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-black">
+      <RecipeTimer />
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header with navigation */}
         <div className="flex items-center justify-between mb-8">

@@ -400,12 +400,13 @@ function RecipeDisplay({ recipe, videoId, recipeIndex = 0, onActivateAndSeek, cl
                       return (
                         <li
                           key={instruction.step}
-                          onClick={() => toggleStep(videoId, instruction.step, recipeIndex)}
-                          className={`text-sm flex items-start cursor-pointer select-none transition-opacity ${
+                          className={`text-sm flex items-start select-none transition-opacity ${
                             isCompleted ? 'opacity-50' : 'opacity-100'
                           }`}
                         >
-                          <span className={`mr-3 flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                          <span
+                            onClick={() => toggleStep(videoId, instruction.step, recipeIndex)}
+                            className={`mr-3 flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors cursor-pointer ${
                             isCompleted
                               ? 'bg-green-500 dark:bg-green-400 text-white'
                               : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-50 hover:bg-zinc-300 dark:hover:bg-zinc-600'
@@ -419,7 +420,10 @@ function RecipeDisplay({ recipe, videoId, recipeIndex = 0, onActivateAndSeek, cl
                             )}
                           </span>
                           <div className="flex-1">
-                            <span className={`${isCompleted ? 'line-through text-zinc-500 dark:text-zinc-500' : 'text-zinc-700 dark:text-zinc-300'}`}>
+                            <span
+                              onClick={() => toggleStep(videoId, instruction.step, recipeIndex)}
+                              className={`cursor-pointer ${isCompleted ? 'line-through text-zinc-500 dark:text-zinc-500' : 'text-zinc-700 dark:text-zinc-300'}`}
+                            >
                               {instruction.text}
                             </span>
                             {/* Per-step ingredients */}

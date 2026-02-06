@@ -91,6 +91,62 @@ const SAMPLE_RECIPES: Recipe[] = [
     ],
     equipment: ['Wok', 'Spatula'],
   },
+  {
+    title: 'Classic Sourdough Bread',
+    description: 'Artisan sourdough loaf with crispy crust and tangy flavor',
+    prep_time_minutes: 45,
+    cook_time_minutes: 45,
+    servings: 1,
+    difficulty: 'Hard',
+    ingredients: [
+      { item: 'Bread flour', quantity: '500', unit: 'g', notes: '' },
+      { item: 'Water', quantity: '350', unit: 'g', notes: 'room temperature' },
+      { item: 'Sourdough starter', quantity: '100', unit: 'g', notes: 'active and bubbly' },
+      { item: 'Salt', quantity: '10', unit: 'g', notes: '' },
+      { item: 'Rice flour', quantity: '2', unit: 'tbsp', notes: 'for dusting banneton' },
+    ],
+    instructions: [
+      // Autolyse
+      { step: 1, text: 'Mix flour and water in a large bowl until no dry flour remains.' },
+      { step: 2, text: 'Cover and let rest for 30 minutes (autolyse).', measurements: { times: ['30 minutes'] } },
+      // Add starter and salt
+      { step: 3, text: 'Add active sourdough starter to the dough.' },
+      { step: 4, text: 'Sprinkle salt over the top.' },
+      { step: 5, text: 'Mix by squeezing dough through fingers until fully incorporated, about 3 minutes.', measurements: { times: ['3 minutes'] } },
+      // Bulk fermentation with stretch and folds
+      { step: 6, text: 'Perform first set of stretch and folds: pull dough up and fold over itself from all 4 sides.' },
+      { step: 7, text: 'Cover and rest for 30 minutes.', measurements: { times: ['30 minutes'] } },
+      { step: 8, text: 'Perform second set of stretch and folds.' },
+      { step: 9, text: 'Cover and rest for 30 minutes.', measurements: { times: ['30 minutes'] } },
+      { step: 10, text: 'Perform third set of stretch and folds.' },
+      { step: 11, text: 'Cover and rest for 30 minutes.', measurements: { times: ['30 minutes'] } },
+      { step: 12, text: 'Perform fourth and final set of stretch and folds.' },
+      { step: 13, text: 'Cover and let bulk ferment for 2-3 hours until doubled in size.', measurements: { times: ['2 hours'] } },
+      // Shaping
+      { step: 14, text: 'Turn dough onto lightly floured surface.' },
+      { step: 15, text: 'Pre-shape into a round by folding edges to center, then flip seam-side down.' },
+      { step: 16, text: 'Let rest uncovered for 20 minutes (bench rest).', measurements: { times: ['20 minutes'] } },
+      { step: 17, text: 'Dust banneton generously with rice flour.' },
+      { step: 18, text: 'Final shape: fold edges to center, roll tight, and place seam-side up in banneton.' },
+      // Cold proof
+      { step: 19, text: 'Cover with plastic wrap and refrigerate overnight (8-12 hours).', measurements: { times: ['8 hours'] } },
+      // Baking
+      { step: 20, text: 'Preheat oven with Dutch oven inside to 500°F for 1 hour.', measurements: { temperatures: ['500°F'], times: ['1 hour'] } },
+      { step: 21, text: 'Turn dough onto parchment paper and score top with razor blade.' },
+      { step: 22, text: 'Carefully place dough in hot Dutch oven and cover with lid.' },
+      { step: 23, text: 'Bake covered for 20 minutes.', measurements: { temperatures: ['500°F'], times: ['20 minutes'] } },
+      { step: 24, text: 'Remove lid and reduce temperature to 450°F.', measurements: { temperatures: ['450°F'] } },
+      { step: 25, text: 'Bake uncovered for 20-25 minutes until deep golden brown.', measurements: { times: ['25 minutes'] } },
+      { step: 26, text: 'Remove from Dutch oven and cool on wire rack for at least 1 hour before slicing.', measurements: { times: ['1 hour'] } },
+    ],
+    equipment: ['Large mixing bowl', 'Dutch oven', 'Banneton/proofing basket', 'Razor blade/lame', 'Parchment paper', 'Wire cooling rack', 'Kitchen scale'],
+    tips: [
+      'Your starter should pass the float test (a spoonful floats in water) before using',
+      'During bulk fermentation, you can do other tasks during the 30-minute rest periods',
+      'The cold overnight proof develops flavor and makes scoring easier',
+      'Let bread cool completely before cutting for best texture',
+    ],
+  },
 ];
 
 interface StateConfiguratorProps {
