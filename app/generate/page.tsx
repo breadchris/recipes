@@ -5,6 +5,9 @@ import Link from 'next/link';
 import { experimental_useObject as useObject } from '@ai-sdk/react';
 import { recipeSchema, type GeneratedRecipe } from '@/lib/schemas/recipe';
 import { useRecipeProgressStore } from '@/lib/stores/recipeProgress';
+import { useTimerStore } from '@/lib/stores/timerStore';
+import { parseTimeString } from '@/lib/parseTimeString';
+import RecipeTimer from '@/components/RecipeTimer';
 import OrderOnInstacartButtonGenerated from '@/components/OrderOnInstacartButtonGenerated';
 import { getRandomAdjective, getRandomCategory, getRandomWaitingPhrase, getRandomExampleQuestion } from '@/lib/recipe-suggestions';
 import { RecentlyGeneratedRecipes } from '@/components/RecentlyGeneratedRecipes';
@@ -34,6 +37,15 @@ export function GeneratedRecipeDisplay({
     getProgress,
     resetProgress,
   } = useRecipeProgressStore();
+  const startTimer = useTimerStore((state) => state.startTimer);
+
+  const handleTimeClick = (e: React.MouseEvent, timeString: string, stepNumber: number) => {
+    e.stopPropagation();
+    const seconds = parseTimeString(timeString);
+    if (seconds) {
+      startTimer(stepNumber, 0, timeString, seconds);
+    }
+  };
 
   const progress = getProgress(generatedId, 0);
   const totalSteps = recipe.instructions?.length || 0;
@@ -236,13 +248,13 @@ export function GeneratedRecipeDisplay({
               return (
                 <li
                   key={instruction.step ?? index}
-                  onClick={() => toggleStep(generatedId, instruction.step, 0)}
-                  className={`text-sm flex items-start cursor-pointer select-none transition-opacity ${
+                  className={`text-sm flex items-start select-none transition-opacity ${
                     isCompleted ? 'opacity-50' : 'opacity-100'
                   }`}
                 >
                   <span
-                    className={`mr-3 flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                    onClick={() => toggleStep(generatedId, instruction.step, 0)}
+                    className={`mr-3 flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-colors cursor-pointer ${
                       isCompleted
                         ? 'bg-green-500 dark:bg-green-400 text-white'
                         : 'bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-50 hover:bg-zinc-300 dark:hover:bg-zinc-600'
@@ -257,26 +269,59 @@ export function GeneratedRecipeDisplay({
                     )}
                   </span>
                   <div className="flex-1">
-                    <span className={isCompleted ? 'line-through text-zinc-500 dark:text-zinc-500' : 'text-zinc-700 dark:text-zinc-300'}>
+                    <span
+                      onClick={() => toggleStep(generatedId, instruction.step, 0)}
+                      className={`cursor-pointer ${isCompleted ? 'line-through text-zinc-500 dark:text-zinc-500' : 'text-zinc-700 dark:text-zinc-300'}`}
+                    >
                       {instruction.text}
                     </span>
                     {/* Per-step ingredients */}
                     {instruction.keywords?.ingredients && instruction.keywords.ingredients.length > 0 && (
                       <ul className="mt-2 space-y-1">
-                        {instruction.keywords.ingredients.map((ing, idx) => (
-                          <li
-                            key={`step-ing-${idx}`}
-                            className="text-xs flex items-start text-zinc-600 dark:text-zinc-400"
-                          >
-                            <span className="text-green-600 dark:text-green-400 mr-1.5">•</span>
-                            <span>
-                              {ing.quantity && <span className="font-medium">{ing.quantity}</span>}
-                              {ing.unit && <span className="font-medium"> {ing.unit}</span>}
-                              {(ing.quantity || ing.unit) && ' '}
-                              {ing.item}
-                            </span>
-                          </li>
-                        ))}
+                        {instruction.keywords.ingredients.map((ing, idx) => {
+                          // Try to find matching ingredient in recipe ingredients list
+                          const matchingIndex = ing?.item ? (recipe.ingredients?.findIndex(
+                            recipeIng => recipeIng.item?.toLowerCase() === ing.item.toLowerCase()
+                          ) ?? -1) : -1;
+                          const isChecked = matchingIndex !== -1 && isIngredientChecked(generatedId, matchingIndex, 0);
+                          const isClickable = matchingIndex !== -1;
+                          return (
+                            <li
+                              key={`step-ing-${idx}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (isClickable) {
+                                  toggleIngredient(generatedId, matchingIndex, 0);
+                                }
+                              }}
+                              className={`text-xs flex items-start transition-opacity ${
+                                isClickable ? 'cursor-pointer' : ''
+                              } ${isChecked ? 'opacity-50' : 'opacity-100'}`}
+                            >
+                              {isClickable ? (
+                                <span className={`mr-1.5 flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                  isChecked
+                                    ? 'bg-green-500 dark:bg-green-400 border-green-500 dark:border-green-400 text-white'
+                                    : 'border-zinc-300 dark:border-zinc-600 text-transparent hover:border-zinc-400 dark:hover:border-zinc-500'
+                                }`}>
+                                  {isChecked && (
+                                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                </span>
+                              ) : (
+                                <span className="text-green-600 dark:text-green-400 mr-1.5">•</span>
+                              )}
+                              <span className={isChecked ? 'line-through text-zinc-500 dark:text-zinc-500' : 'text-zinc-600 dark:text-zinc-400'}>
+                                {ing.quantity && <span className="font-medium">{ing.quantity}</span>}
+                                {ing.unit && <span className="font-medium"> {ing.unit}</span>}
+                                {(ing.quantity || ing.unit) && ' '}
+                                {ing.item}
+                              </span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     )}
                     {/* Measurements */}
@@ -291,12 +336,14 @@ export function GeneratedRecipeDisplay({
                           </span>
                         ))}
                         {instruction.measurements.times?.map((time, idx) => (
-                          <span
+                          <button
                             key={`time-${idx}`}
-                            className="px-1.5 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                            onClick={(e) => handleTimeClick(e, time, instruction.step)}
+                            className="px-1.5 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-800/50 hover:scale-105 transition-all cursor-pointer"
+                            title="Click to start timer"
                           >
                             {time}
-                          </span>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -718,6 +765,7 @@ export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false
 
   return (
     <div className={containerClass}>
+      <RecipeTimer />
       {/* BEFORE GENERATION: Centered input */}
       {!hasGenerated && (
         <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-8">

@@ -10,6 +10,9 @@ import { VoiceOptimizedView } from './variations/VoiceOptimizedView';
 import { ProgressTrackerView } from './variations/ProgressTrackerView';
 import { TimerCentricView } from './variations/TimerCentricView';
 import { AIVoiceAssistantView } from './variations/AIVoiceAssistantView';
+import { TimelineOverviewView } from './variations/TimelineOverviewView';
+import { SectionedRecipeView } from './variations/SectionedRecipeView';
+import { WaitTimeManagerView } from './variations/WaitTimeManagerView';
 import { RecipeChatConversational } from './variations/chat/RecipeChatConversational';
 import { RecipeChatFocused } from './variations/chat/RecipeChatFocused';
 import { RecipeChatGuided } from './variations/chat/RecipeChatGuided';
@@ -106,6 +109,9 @@ export function RecipeViewLab({ recipe }: RecipeViewLabProps) {
       {activeVariation === 'progress-tracker' && <ProgressTrackerView {...variationProps} />}
       {activeVariation === 'timer-centric' && <TimerCentricView {...variationProps} />}
       {activeVariation === 'ai-voice-assistant' && <AIVoiceAssistantView {...variationProps} />}
+      {activeVariation === 'timeline-overview' && <TimelineOverviewView {...variationProps} />}
+      {activeVariation === 'sectioned-recipe' && <SectionedRecipeView {...variationProps} />}
+      {activeVariation === 'wait-time-manager' && <WaitTimeManagerView {...variationProps} />}
       {activeVariation === 'chat-conversational' && <RecipeChatConversational {...chatProps} />}
       {activeVariation === 'chat-focused' && <RecipeChatFocused {...chatProps} setMessages={setMessages} />}
       {activeVariation === 'chat-guided' && <RecipeChatGuided {...chatProps} append={append} />}

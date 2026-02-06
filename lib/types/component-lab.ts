@@ -112,6 +112,21 @@ export const RECIPE_VIEW_VARIATIONS: ComponentVariation[] = [
     name: 'AI Voice Assistant',
     description: 'Conversational AI cooking assistant with OpenAI Realtime API',
   },
+  {
+    id: 'timeline-overview',
+    name: 'Timeline Overview',
+    description: 'Visual timeline showing all steps with expected completion time and wait periods',
+  },
+  {
+    id: 'sectioned-recipe',
+    name: 'Sectioned Recipe',
+    description: 'Groups steps into logical sections (prep, sauce, protein, etc.) with per-section progress',
+  },
+  {
+    id: 'wait-time-manager',
+    name: 'Wait Time Manager',
+    description: 'Optimizes long waits by suggesting parallel tasks you can complete during wait periods',
+  },
 ];
 
 export const RECIPE_CHAT_VARIATIONS: ComponentVariation[] = [
