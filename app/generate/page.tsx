@@ -279,40 +279,33 @@ export function GeneratedRecipeDisplay({
                     {instruction.keywords?.ingredients && instruction.keywords.ingredients.length > 0 && (
                       <ul className="mt-2 space-y-1">
                         {instruction.keywords.ingredients.map((ing, idx) => {
-                          // Try to find matching ingredient in recipe ingredients list
+                          // Find matching ingredient in main list for linked toggling
                           const matchingIndex = ing?.item ? (recipe.ingredients?.findIndex(
                             recipeIng => recipeIng.item?.toLowerCase() === ing.item.toLowerCase()
                           ) ?? -1) : -1;
                           const isChecked = matchingIndex !== -1 && isIngredientChecked(generatedId, matchingIndex, 0);
-                          const isClickable = matchingIndex !== -1;
                           return (
                             <li
                               key={`step-ing-${idx}`}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                if (isClickable) {
+                                if (matchingIndex !== -1) {
                                   toggleIngredient(generatedId, matchingIndex, 0);
                                 }
                               }}
-                              className={`text-xs flex items-start transition-opacity ${
-                                isClickable ? 'cursor-pointer' : ''
-                              } ${isChecked ? 'opacity-50' : 'opacity-100'}`}
+                              className={`text-xs flex items-start cursor-pointer transition-opacity ${isChecked ? 'opacity-50' : 'opacity-100'}`}
                             >
-                              {isClickable ? (
-                                <span className={`mr-1.5 flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                  isChecked
-                                    ? 'bg-green-500 dark:bg-green-400 border-green-500 dark:border-green-400 text-white'
-                                    : 'border-zinc-300 dark:border-zinc-600 text-transparent hover:border-zinc-400 dark:hover:border-zinc-500'
-                                }`}>
-                                  {isChecked && (
-                                    <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  )}
-                                </span>
-                              ) : (
-                                <span className="text-green-600 dark:text-green-400 mr-1.5">•</span>
-                              )}
+                              <span className={`mr-1.5 flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                isChecked
+                                  ? 'bg-green-500 dark:bg-green-400 border-green-500 dark:border-green-400 text-white'
+                                  : 'border-zinc-300 dark:border-zinc-600 text-transparent hover:border-zinc-400 dark:hover:border-zinc-500'
+                              }`}>
+                                {isChecked && (
+                                  <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </span>
                               <span className={isChecked ? 'line-through text-zinc-500 dark:text-zinc-500' : 'text-zinc-600 dark:text-zinc-400'}>
                                 {ing.quantity && <span className="font-medium">{ing.quantity}</span>}
                                 {ing.unit && <span className="font-medium"> {ing.unit}</span>}
@@ -396,9 +389,9 @@ export function GeneratedRecipeDisplay({
  * Reusable recipe generator component
  * Can be embedded in other pages or used standalone
  */
-export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false }: { embedded?: boolean; rotatingPlaceholders?: boolean }) {
+export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false, initialRecipeData }: { embedded?: boolean; rotatingPlaceholders?: boolean; initialRecipeData?: { recipe: GeneratedRecipe; generatedId: string; savedId: string; prompt?: string } }) {
   // Input state
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialRecipeData?.prompt || '');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
@@ -416,22 +409,22 @@ export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false
   const waitingPhraseIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generation state
-  const [generatedId, setGeneratedId] = useState<string | null>(null);
-  const [hasGenerated, setHasGenerated] = useState(false);
+  const [generatedId, setGeneratedId] = useState<string | null>(initialRecipeData?.generatedId || null);
+  const [hasGenerated, setHasGenerated] = useState(!!initialRecipeData);
 
   // Save state
   const [isSaving, setIsSaving] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-  const [savedRecipeId, setSavedRecipeId] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(!!initialRecipeData);
+  const [savedRecipeId, setSavedRecipeId] = useState<string | null>(initialRecipeData?.savedId || null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // Modification state
   const [modificationInput, setModificationInput] = useState('');
-  const [currentRecipe, setCurrentRecipe] = useState<Partial<GeneratedRecipe> | null>(null);
+  const [currentRecipe, setCurrentRecipe] = useState<Partial<GeneratedRecipe> | null>(initialRecipeData?.recipe || null);
   const [inputHidden, setInputHidden] = useState(false);
 
   // Preloaded recipe state (for viewing saved recipes without regenerating)
-  const [preloadedRecipe, setPreloadedRecipe] = useState<GeneratedRecipe | null>(null);
+  const [preloadedRecipe, setPreloadedRecipe] = useState<GeneratedRecipe | null>(initialRecipeData?.recipe || null);
 
   // Recipe fade-in animation state
   const [recipeVisible, setRecipeVisible] = useState(false);
@@ -440,6 +433,10 @@ export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Auto-save refs
+  const shouldAutoSaveRef = useRef(false);
+  const shouldAutoSaveModRef = useRef(false);
 
   // Vercel AI SDK hook for streaming generation
   const { object: recipe, submit, isLoading, error, stop } = useObject({
@@ -611,6 +608,7 @@ export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false
     setPreloadedRecipe(null); // Clear any preloaded recipe
     if (promptOverride) setInput(promptOverride);
 
+    shouldAutoSaveRef.current = true;
     submit({ prompt });
   }, [input, isLoading, submit]);
 
@@ -649,6 +647,7 @@ export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false
       if (res.ok && data.success) {
         setIsSaved(true);
         setSavedRecipeId(data.id);
+        window.history.replaceState(null, '', `/generate/${data.id}`);
       } else {
         setSaveError(data.error || 'Failed to save recipe');
       }
@@ -674,6 +673,7 @@ export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false
     setModificationInput('');
     setInputHidden(false);
     stop();
+    window.history.replaceState(null, '', '/generate');
     inputRef.current?.focus();
   }, [stop]);
 
@@ -690,6 +690,7 @@ export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false
     setModificationInput('');
     setIsSaved(false); // Mark as unsaved since we're modifying
 
+    shouldAutoSaveModRef.current = true;
     // Use the useObject hook for streaming modifications
     submitModification({ recipe: currentRecipe, message });
   }, [currentRecipe, isModifying, submitModification]);
@@ -744,6 +745,66 @@ export function RecipeGenerator({ embedded = false, rotatingPlaceholders = false
       setCurrentRecipe(modifiedRecipe as Partial<GeneratedRecipe>);
     }
   }, [modifiedRecipe]);
+
+  // Auto-save after generation completes
+  useEffect(() => {
+    if (!shouldAutoSaveRef.current || isLoading || !recipe || !(recipe as any).title || !generatedId) return;
+    shouldAutoSaveRef.current = false;
+
+    const doSave = async () => {
+      setIsSaving(true);
+      setSaveError(null);
+      try {
+        const res = await fetch('/api/save-generated-recipe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipe, generatedId, prompt: input }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setIsSaved(true);
+          setSavedRecipeId(data.id);
+          window.history.replaceState(null, '', `/generate/${data.id}`);
+        }
+      } catch (err) {
+        console.error('Auto-save error:', err);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+    doSave();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, recipe, generatedId]);
+
+  // Auto-save after modification completes
+  useEffect(() => {
+    if (!shouldAutoSaveModRef.current || isModifying || !modifiedRecipe || !(modifiedRecipe as any).title || !generatedId) return;
+    shouldAutoSaveModRef.current = false;
+
+    const doSave = async () => {
+      setIsSaving(true);
+      setSaveError(null);
+      try {
+        const res = await fetch('/api/save-generated-recipe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recipe: modifiedRecipe, generatedId, prompt: input }),
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          setIsSaved(true);
+          setSavedRecipeId(data.id);
+          window.history.replaceState(null, '', `/generate/${data.id}`);
+        }
+      } catch (err) {
+        console.error('Auto-save error:', err);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+    doSave();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isModifying, modifiedRecipe, generatedId]);
 
   // Example question placeholder for modification input
   const [exampleQuestion, setExampleQuestion] = useState(() => getRandomExampleQuestion());
