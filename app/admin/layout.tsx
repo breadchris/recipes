@@ -53,6 +53,12 @@ export default function AdminLayout({
                 Nutrition
               </Link>
               <Link
+                href="/admin/ingredients"
+                className="text-sm text-zinc-400 hover:text-violet-400"
+              >
+                Ingredients
+              </Link>
+              <Link
                 href="/admin/components"
                 className="text-sm text-zinc-400 hover:text-violet-400"
               >

@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { GeneratedRecipeDisplay } from '../page';
-import RecipeTimer from '@/components/RecipeTimer';
+import { RecipeGenerator } from '../page';
 import type { GeneratedRecipeRecord } from '@/lib/types/generated-recipe';
 import type { GeneratedRecipe } from '@/lib/schemas/recipe';
 
@@ -12,7 +11,12 @@ export default function SavedRecipePage() {
   const params = useParams();
   const id = params.id as string;
 
-  const [recipe, setRecipe] = useState<GeneratedRecipeRecord | null>(null);
+  const [recipeData, setRecipeData] = useState<{
+    recipe: GeneratedRecipe;
+    generatedId: string;
+    savedId: string;
+    prompt?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +31,13 @@ export default function SavedRecipePage() {
           return;
         }
 
-        setRecipe(data.recipe);
+        const record = data.recipe as GeneratedRecipeRecord;
+        setRecipeData({
+          recipe: record.metadata.recipe as GeneratedRecipe,
+          generatedId: record.metadata.generated_id,
+          savedId: record.id,
+          prompt: record.metadata.prompt,
+        });
       } catch (err) {
         console.error('Error fetching recipe:', err);
         setError('Failed to load recipe');
@@ -52,7 +62,7 @@ export default function SavedRecipePage() {
     );
   }
 
-  if (error || !recipe) {
+  if (error || !recipeData) {
     return (
       <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center px-4">
         <div className="text-center">
@@ -73,49 +83,5 @@ export default function SavedRecipePage() {
     );
   }
 
-  const recipeData = recipe.metadata.recipe as GeneratedRecipe;
-  const generatedId = recipe.metadata.generated_id;
-
-  return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      <RecipeTimer />
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header with navigation */}
-        <div className="flex items-center justify-between mb-8">
-          <Link
-            href="/"
-            className="text-sm text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
-          >
-            ← Back to Home
-          </Link>
-          <Link
-            href="/generate"
-            className="text-sm text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
-          >
-            Create New Recipe
-          </Link>
-        </div>
-
-        {/* Recipe display */}
-        <GeneratedRecipeDisplay recipe={recipeData} generatedId={generatedId} />
-
-        {/* Share section */}
-        <div className="mt-8 pt-6 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-zinc-400 dark:text-zinc-500">
-              Generated with AI • {new Date(recipe.metadata.created_at).toLocaleDateString()}
-            </p>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-              }}
-              className="text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors underline underline-offset-2"
-            >
-              Copy link to share
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return <RecipeGenerator embedded={false} initialRecipeData={recipeData} />;
 }
